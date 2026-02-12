@@ -1,0 +1,1423 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <link rel="icon" type="image/png" href="images/logo.png">
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Farmer Dashboard - AgriTech Platform</title>
+    <link rel="icon" type="image/png" href="images/logo.png">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css" />
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet" />
+    <link rel="stylesheet" href="theme.css">
+    <style>
+      :root {
+        --primary-color: #4caf50;
+        --primary-dark: #45a049;
+        --secondary-color: #2196f3;
+        --accent-color: #ff9800;
+        --success-color: #4caf50;
+        --warning-color: #ff9800;
+        --error-color: #f44336;
+        --text-primary: #333;
+        --text-secondary: #666;
+        --bg-primary: #ffffff;
+        --bg-secondary: #f8f9fa;
+        --border-color: #e0e0e0;
+        --shadow: 0 2px 10px rgba(0,0,0,0.1);
+        --shadow-hover: 0 8px 25px rgba(0,0,0,0.15);
+      }
+
+      html {
+        scroll-behavior: smooth;
+      }
+
+      * {
+        margin: 0;
+        padding: 0;
+        box-sizing: border-box;
+      }
+
+      body {
+        font-family: 'Poppins', sans-serif;
+        background: linear-gradient(135deg, #4caf50 0%, #66bb6a 100%);
+        min-height: 100vh;
+        color: var(--text-primary);
+      }
+
+      .navbar {
+        background: rgba(255, 255, 255, 0.95);
+        backdrop-filter: blur(10px);
+        padding: 1rem 0;
+        box-shadow: var(--shadow);
+        position: sticky;
+        top: 0;
+        z-index: 1000;
+      }
+
+      .navbar-content {
+        max-width: 1200px;
+        margin: 0 auto;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        padding: 0 2rem;
+      }
+
+      .brand {
+        display: flex;
+        align-items: center;
+      }
+
+      .logo {
+        font-size: 1.5rem;
+        font-weight: 700;
+        color: var(--primary-color);
+        text-decoration: none;
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+      }
+
+      .dashboard-badge {
+        display: inline-flex;
+        align-items: center;
+        gap: 0.5rem;
+        padding: 0.5rem 1rem;
+        border-radius: 20px;
+        font-size: 0.9rem;
+        font-weight: 600;
+        color: white;
+        margin-left: 1rem;
+        box-shadow: 0 2px 8px rgba(0,0,0,0.2);
+        animation: pulse 2s infinite;
+        background: linear-gradient(135deg, #4caf50, #45a049);
+      }
+
+      @keyframes pulse {
+        0% { box-shadow: 0 2px 8px rgba(0,0,0,0.2); }
+        50% { box-shadow: 0 4px 16px rgba(0,0,0,0.3); }
+        100% { box-shadow: 0 2px 8px rgba(0,0,0,0.2); }
+      }
+
+      .nav-buttons {
+        display: flex;
+        gap: 1rem;
+        align-items: center;
+      }
+
+      .user-info {
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+        padding: 0.5rem 1rem;
+        background: var(--bg-secondary);
+        border-radius: 25px;
+        font-size: 0.9rem;
+      }
+
+      .btn {
+        padding: 0.6rem 1.2rem;
+        border: none;
+        border-radius: 8px;
+        cursor: pointer;
+        font-weight: 500;
+        transition: all 0.3s ease;
+        text-decoration: none;
+        display: inline-flex;
+        align-items: center;
+        gap: 0.5rem;
+      }
+
+      .btn-secondary {
+        background: var(--bg-secondary);
+        color: var(--text-primary);
+        border: 1px solid var(--border-color);
+      }
+
+      .btn-secondary:hover {
+        background: var(--border-color);
+      }
+
+      .container {
+        max-width: 1200px;
+        margin: 0 auto;
+        padding: 2rem;
+      }
+
+      .dashboard-header {
+        text-align: center;
+        margin-bottom: 3rem;
+        color: white;
+      }
+
+      .dashboard-header h1 {
+        font-size: 3rem;
+        font-weight: 700;
+        margin-bottom: 1rem;
+        text-shadow: 0 2px 4px rgba(0,0,0,0.3);
+      }
+
+      .dashboard-header p {
+        font-size: 1.2rem;
+        opacity: 0.9;
+        max-width: 600px;
+        margin: 0 auto;
+      }
+
+      .stats-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+        gap: 1.5rem;
+        margin-bottom: 3rem;
+      }
+
+      .stat-card {
+        background: white;
+        padding: 2rem;
+        border-radius: 15px;
+        box-shadow: var(--shadow);
+        transition: all 0.3s ease;
+        text-align: center;
+      }
+
+      .stat-card:hover {
+        transform: translateY(-5px);
+        box-shadow: var(--shadow-hover);
+      }
+
+      .stat-icon {
+        font-size: 3rem;
+        margin-bottom: 1rem;
+        display: block;
+      }
+
+      .stat-number {
+        font-size: 2.5rem;
+        font-weight: 700;
+        color: var(--primary-color);
+        margin-bottom: 0.5rem;
+      }
+
+      .stat-label {
+        color: var(--text-secondary);
+        font-weight: 500;
+      }
+
+      .nav-tabs {
+        display: flex;
+        justify-content: center;
+        gap: 1rem;
+        margin-bottom: 3rem;
+        flex-wrap: wrap;
+      }
+
+      .tab-button {
+        padding: 1rem 2rem;
+        border: none;
+        border-radius: 12px;
+        cursor: pointer;
+        font-weight: 600;
+        transition: all 0.3s ease;
+        background: rgba(255, 255, 255, 0.9);
+        color: var(--text-primary);
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+        font-size: 1rem;
+      }
+
+      .tab-button:hover {
+        background: white;
+        transform: translateY(-3px);
+        box-shadow: var(--shadow-hover);
+      }
+
+      .tab-button.active {
+        background: var(--primary-color);
+        color: white;
+        box-shadow: var(--shadow);
+      }
+
+      .section {
+        display: none;
+        background: white;
+        border-radius: 20px;
+        padding: 3rem;
+        box-shadow: var(--shadow);
+        margin-bottom: 2rem;
+      }
+
+      .section.active {
+        display: block;
+      }
+
+      .section-grid {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 3rem;
+      }
+
+      .form-card {
+        background: var(--bg-secondary);
+        border-radius: 15px;
+        padding: 2rem;
+      }
+
+      .form-card h3 {
+        font-size: 1.5rem;
+        font-weight: 600;
+        margin-bottom: 2rem;
+        color: var(--text-primary);
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+      }
+
+      .form-group {
+        margin-bottom: 1.5rem;
+      }
+
+      .form-group label {
+        display: block;
+        margin-bottom: 0.5rem;
+        font-weight: 500;
+        color: var(--text-primary);
+      }
+
+      .form-group input, .form-group select, .form-group textarea {
+        width: 100%;
+        padding: 0.8rem;
+        border: 2px solid var(--border-color);
+        border-radius: 8px;
+        font-size: 1rem;
+        transition: border-color 0.3s ease;
+      }
+
+      .form-group input:focus, .form-group select:focus, .form-group textarea:focus {
+        outline: none;
+        border-color: var(--primary-color);
+      }
+
+      .form-row {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 1rem;
+      }
+
+      .submit-button {
+        width: 100%;
+        padding: 1rem;
+        background: linear-gradient(135deg, var(--primary-color), var(--primary-dark));
+        color: white;
+        border: none;
+        border-radius: 8px;
+        font-size: 1rem;
+        font-weight: 600;
+        cursor: pointer;
+        transition: all 0.3s ease;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        gap: 0.5rem;
+      }
+
+      .submit-button:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 8px 25px rgba(76, 175, 80, 0.3);
+      }
+
+      .listings-container {
+        background: white;
+        border-radius: 15px;
+        padding: 2rem;
+        border: 2px solid var(--border-color);
+      }
+
+      .listings-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: 2rem;
+        padding-bottom: 1rem;
+        border-bottom: 2px solid var(--border-color);
+      }
+
+      .listings-header h3 {
+        font-size: 1.5rem;
+        font-weight: 600;
+        color: var(--text-primary);
+      }
+
+      .listings-count {
+        background: var(--primary-color);
+        color: white;
+        padding: 0.5rem 1rem;
+        border-radius: 20px;
+        font-size: 0.9rem;
+        font-weight: 600;
+      }
+
+      .listing-item {
+        background: var(--bg-secondary);
+        border-radius: 12px;
+        padding: 1.5rem;
+        margin-bottom: 1rem;
+        border-left: 4px solid var(--primary-color);
+        transition: all 0.3s ease;
+      }
+
+      .listing-item:hover {
+        transform: translateX(5px);
+        box-shadow: var(--shadow);
+      }
+
+      .listing-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: flex-start;
+        margin-bottom: 1rem;
+      }
+
+      .listing-title {
+        font-size: 1.2rem;
+        font-weight: 600;
+        color: var(--text-primary);
+        margin-bottom: 0.5rem;
+      }
+
+      .listing-price {
+        font-size: 1.1rem;
+        font-weight: 600;
+        color: var(--primary-color);
+      }
+
+      .delete-btn {
+        background: var(--error-color);
+        color: white;
+        border: none;
+        padding: 0.5rem 1rem;
+        border-radius: 8px;
+        cursor: pointer;
+        font-size: 0.9rem;
+        transition: all 0.3s ease;
+      }
+
+      .delete-btn:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 4px 12px rgba(244, 67, 54, 0.3);
+      }
+
+      .listing-details {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+        gap: 1rem;
+      }
+
+      .listing-detail {
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+        color: var(--text-secondary);
+        font-size: 0.9rem;
+      }
+
+      .listing-detail i {
+        color: var(--primary-color);
+      }
+
+      .empty-state {
+        text-align: center;
+        padding: 3rem;
+        color: var(--text-secondary);
+      }
+
+      .empty-state i {
+        font-size: 4rem;
+        margin-bottom: 1rem;
+        color: var(--border-color);
+      }
+
+      .success-message {
+        background: linear-gradient(135deg, var(--success-color), #45a049);
+        color: white;
+        padding: 1rem;
+        border-radius: 8px;
+        margin-bottom: 1rem;
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+        animation: slideIn 0.3s ease-out;
+      }
+
+      @keyframes slideIn {
+        from { transform: translateY(-20px); opacity: 0; }
+        to { transform: translateY(0); opacity: 1; }
+      }
+
+      .equipment-info {
+        margin-top: 2rem;
+        background: var(--bg-secondary);
+        border-radius: 15px;
+        padding: 2rem;
+      }
+
+      .equipment-info h4 {
+        font-size: 1.3rem;
+        font-weight: 600;
+        margin-bottom: 1.5rem;
+        color: var(--text-primary);
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+      }
+
+      .equipment-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+        gap: 1.5rem;
+      }
+
+      .equipment-card {
+        background: white;
+        padding: 1.5rem;
+        border-radius: 12px;
+        text-align: center;
+        transition: all 0.3s ease;
+        border: 2px solid var(--border-color);
+      }
+
+      .equipment-card:hover {
+        transform: translateY(-5px);
+        box-shadow: var(--shadow);
+        border-color: var(--primary-color);
+      }
+
+      .equipment-card i {
+        font-size: 2rem;
+        color: var(--primary-color);
+        margin-bottom: 1rem;
+      }
+
+      .equipment-card h5 {
+        font-size: 1.1rem;
+        font-weight: 600;
+        margin-bottom: 0.5rem;
+        color: var(--text-primary);
+      }
+
+      .equipment-card p {
+        font-size: 0.9rem;
+        color: var(--text-secondary);
+        margin-bottom: 1rem;
+      }
+
+      .equipment-card .price {
+        font-size: 1rem;
+        font-weight: 600;
+        color: var(--primary-color);
+      }
+
+      .booking-summary {
+        background: var(--bg-secondary);
+        border-radius: 12px;
+        padding: 1.5rem;
+        margin: 1.5rem 0;
+        border-left: 4px solid var(--primary-color);
+      }
+
+      .booking-summary h4 {
+        font-size: 1.2rem;
+        font-weight: 600;
+        margin-bottom: 1rem;
+        color: var(--text-primary);
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+      }
+
+      .summary-details p {
+        margin-bottom: 0.5rem;
+        color: var(--text-secondary);
+      }
+
+      .summary-details strong {
+        color: var(--text-primary);
+      }
+        grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+        gap: 1.5rem;
+      }
+
+      .action-btn {
+        background: linear-gradient(135deg, var(--primary-color), var(--primary-dark));
+        color: white;
+        padding: 1.5rem;
+        border-radius: 12px;
+        text-decoration: none;
+        text-align: center;
+        transition: all 0.3s ease;
+        border: none;
+        cursor: pointer;
+        font-size: 1rem;
+      }
+
+      .action-btn:hover {
+        transform: translateY(-3px);
+        box-shadow: 0 8px 25px rgba(76, 175, 80, 0.3);
+      }
+
+      .action-btn i {
+        display: block;
+        font-size: 2rem;
+        margin-bottom: 0.5rem;
+      }
+
+      .footer-info {
+        text-align: center;
+        color: white;
+        margin-top: 3rem;
+        opacity: 0.8;
+      }
+
+      @media (max-width: 768px) {
+        .container {
+          padding: 1rem;
+        }
+        
+        .dashboard-header h1 {
+          font-size: 2rem;
+        }
+        
+        .features-grid {
+          grid-template-columns: 1fr;
+        }
+        
+        .navbar-content {
+          padding: 0 1rem;
+        }
+
+        .dashboard-badge {
+          font-size: 0.8rem;
+          padding: 0.4rem 0.8rem;
+          margin-left: 0.5rem;
+        }
+      }
+    </style>
+  </head>
+  <body>
+    <nav class="navbar">
+      <div class="navbar-content">
+        <div class="brand">
+          <a href="#" class="logo">
+            <i class="fas fa-seedling"></i>
+            Farmer Dashboard
+          </a>
+          <span class="dashboard-badge">
+            <i class="fas fa-seedling"></i> Active: Farmer Dashboard
+          </span>
+        </div>
+        <div class="nav-buttons">
+          <div class="user-info">
+            <i class="fas fa-user-circle"></i>
+            <span id="user-name">Farmer</span>
+          </div>
+          <button class="theme-toggle btn btn-secondary" aria-label="Toggle dark/light mode">
+            <i class="fas fa-sun sun-icon"></i>
+            <i class="fas fa-moon moon-icon"></i>
+          </button>
+          <button class="btn btn-secondary" onclick="logout()">
+            <i class="fas fa-sign-out-alt"></i>
+            Logout
+          </button>
+        </div>
+      </div>
+    </nav>
+
+    <div class="container">
+      <div class="dashboard-header">
+        <h1><i class="fas fa-seedling"></i> Farmer Connection</h1>
+        <p>Connecting farmers with buyers across India - Sell your products, buy supplies, and book equipment</p>
+      </div>
+
+      <!-- Statistics Overview -->
+      <div class="stats-grid">
+        <div class="stat-card">
+          <i class="fas fa-store stat-icon" style="color: var(--primary-color);"></i>
+          <div class="stat-number" id="product-stats">0</div>
+          <div class="stat-label">Products Listed</div>
+        </div>
+        <div class="stat-card">
+          <i class="fas fa-shopping-cart stat-icon" style="color: var(--secondary-color);"></i>
+          <div class="stat-number" id="request-stats">0</div>
+          <div class="stat-label">Buy Requests</div>
+        </div>
+        <div class="stat-card">
+          <i class="fas fa-tractor stat-icon" style="color: var(--accent-color);"></i>
+          <div class="stat-number" id="booking-stats">0</div>
+          <div class="stat-label">Equipment Bookings</div>
+        </div>
+        <div class="stat-card">
+          <i class="fas fa-users stat-icon" style="color: var(--success-color);"></i>
+          <div class="stat-number">100+</div>
+          <div class="stat-label">Connected Buyers</div>
+        </div>
+      </div>
+
+      <!-- Navigation Tabs -->
+      <nav class="nav-tabs">
+        <button class="tab-button active" data-section="sell">
+          <i class="fas fa-store"></i> Sell Products
+        </button>
+        <button class="tab-button" data-section="buy">
+          <i class="fas fa-shopping-cart"></i> Buy Products
+        </button>
+        <button class="tab-button" data-section="tractor">
+          <i class="fas fa-tractor"></i> Book Tractor
+        </button>
+      </nav>
+
+      <main>
+        <!-- Sell Section -->
+        <section id="sell-section" class="section active">
+          <div class="section-grid">
+            <div class="form-card">
+              <h3><i class="fas fa-plus-circle"></i> List Your Product</h3>
+              <form id="product-form">
+                <div class="form-row">
+                  <div class="form-group">
+                    <label for="seller-name">Your Name</label>
+                    <input type="text" id="seller-name" required />
+                  </div>
+                  <div class="form-group">
+                    <label for="seller-contact">Contact Number</label>
+                    <input type="tel" id="seller-contact" required />
+                  </div>
+                </div>
+
+                <div class="form-group">
+                  <label for="product-name">Product Name</label>
+                  <input
+                    type="text"
+                    id="product-name"
+                    placeholder="e.g., Organic Tomatoes"
+                    required
+                  />
+                </div>
+
+                <div class="form-row">
+                  <div class="form-group">
+                    <label for="product-quantity">Quantity Available</label>
+                    <input
+                      type="text"
+                      id="product-quantity"
+                      placeholder="e.g., 500 kg"
+                      required
+                    />
+                  </div>
+                  <div class="form-group">
+                    <label for="product-price">Price per Unit</label>
+                    <input
+                      type="text"
+                      id="product-price"
+                      placeholder="e.g., ₹50/kg"
+                      required
+                    />
+                  </div>
+                </div>
+
+                <button type="submit" class="submit-button">
+                  <i class="fas fa-plus"></i> Add Product
+                </button>
+              </form>
+            </div>
+
+            <div class="listings-container">
+              <div class="listings-header">
+                <h3>Your Products</h3>
+                <span class="listings-count" id="product-count">0 Products</span>
+              </div>
+              <div id="product-display">
+                <div class="empty-state">
+                  <i class="fas fa-box-open"></i>
+                  <p>No products listed yet. Add your first product!</p>
+                </div>
+              </div>
+            </div>
+          </div>
+        </section>
+
+        <!-- Buy Section -->
+        <section id="buy-section" class="section">
+          <div class="section-grid">
+            <div class="form-card">
+              <h3><i class="fas fa-search"></i> Request to Buy</h3>
+              <form id="buy-form">
+                <div class="form-row">
+                  <div class="form-group">
+                    <label for="buyer-name">Your Name</label>
+                    <input type="text" id="buyer-name" required />
+                  </div>
+                  <div class="form-group">
+                    <label for="buyer-contact">Contact Number</label>
+                    <input type="tel" id="buyer-contact" required />
+                  </div>
+                </div>
+
+                <div class="form-group">
+                  <label for="buy-product-name">Product Looking For</label>
+                  <input
+                    type="text"
+                    id="buy-product-name"
+                    placeholder="e.g., Fresh Wheat"
+                    required
+                  />
+                </div>
+
+                <div class="form-group">
+                  <label for="buy-product-quantity">Quantity Needed</label>
+                  <input
+                    type="text"
+                    id="buy-product-quantity"
+                    placeholder="e.g., 1000 kg"
+                    required
+                  />
+                </div>
+
+                <button type="submit" class="submit-button">
+                  <i class="fas fa-paper-plane"></i> Send Request
+                </button>
+              </form>
+            </div>
+
+            <div class="listings-container">
+              <div class="listings-header">
+                <h3>Buy Requests</h3>
+                <span class="listings-count" id="request-count">0 Requests</span>
+              </div>
+              <div id="buy-request-display">
+                <div class="empty-state">
+                  <i class="fas fa-clipboard-list"></i>
+                  <p>No buy requests yet. Submit your first request!</p>
+                </div>
+              </div>
+            </div>
+          </div>
+        </section>
+
+        <!-- Tractor Booking Section -->
+        <section id="tractor-section" class="section">
+          <div class="section-grid">
+            <div class="form-card">
+              <h3><i class="fas fa-tractor"></i> Book Agricultural Equipment</h3>
+              <form id="tractor-form">
+                <div class="form-row">
+                  <div class="form-group">
+                    <label for="farmer-name">Your Name</label>
+                    <input type="text" id="farmer-name" required />
+                  </div>
+                  <div class="form-group">
+                    <label for="farmer-contact">Contact Number</label>
+                    <input type="tel" id="farmer-contact" required />
+                  </div>
+                </div>
+
+                <div class="form-row">
+                  <div class="form-group">
+                    <label for="farm-location">Farm Location</label>
+                    <input
+                      type="text"
+                      id="farm-location"
+                      placeholder="e.g., Village, District"
+                      required
+                    />
+                  </div>
+                  <div class="form-group">
+                    <label for="farm-area">Farm Area (Acres)</label>
+                    <input
+                      type="number"
+                      id="farm-area"
+                      placeholder="e.g., 5"
+                      required
+                    />
+                  </div>
+                </div>
+
+                <div class="form-group">
+                  <label for="equipment-type">Equipment Type</label>
+                  <select id="equipment-type" required>
+                    <option value="">Select Equipment</option>
+                    <option value="tractor">Tractor (General Purpose)</option>
+                    <option value="tractor-plowing">Tractor with Plow</option>
+                    <option value="tractor-harvester">Tractor with Harvester</option>
+                    <option value="tractor-seeder">Tractor with Seeder</option>
+                    <option value="cultivator">Cultivator</option>
+                    <option value="thresher">Thresher</option>
+                    <option value="sprayer">Sprayer</option>
+                    <option value="rotavator">Rotavator</option>
+                  </select>
+                </div>
+
+                <div class="form-row">
+                  <div class="form-group">
+                    <label for="booking-date">Required Date</label>
+                    <input type="date" id="booking-date" required />
+                  </div>
+                  <div class="form-group">
+                    <label for="booking-duration">Duration (Hours)</label>
+                    <select id="booking-duration" required>
+                      <option value="">Select Duration</option>
+                      <option value="2">2 Hours - ₹800</option>
+                      <option value="4">4 Hours - ₹1,500</option>
+                      <option value="8">Full Day (8 Hours) - ₹2,800</option>
+                      <option value="16">2 Days - ₹5,200</option>
+                      <option value="24">3 Days - ₹7,500</option>
+                    </select>
+                  </div>
+                </div>
+
+                <div class="form-group">
+                  <label for="work-type">Type of Work</label>
+                  <select id="work-type" required>
+                    <option value="">Select Work Type</option>
+                    <option value="plowing">Land Plowing</option>
+                    <option value="sowing">Seed Sowing</option>
+                    <option value="harvesting">Crop Harvesting</option>
+                    <option value="cultivation">Land Cultivation</option>
+                    <option value="spraying">Pesticide Spraying</option>
+                    <option value="transportation">Crop Transportation</option>
+                  </select>
+                </div>
+
+                <div class="form-group">
+                  <label for="special-requirements">Special Requirements (Optional)</label>
+                  <textarea
+                    id="special-requirements"
+                    rows="3"
+                    placeholder="Any specific requirements or instructions..."
+                  ></textarea>
+                </div>
+
+                <div class="booking-summary" id="booking-summary" style="display: none;">
+                  <h4><i class="fas fa-calculator"></i> Booking Summary</h4>
+                  <div class="summary-details">
+                    <p><strong>Equipment:</strong> <span id="summary-equipment">-</span></p>
+                    <p><strong>Duration:</strong> <span id="summary-duration">-</span></p>
+                    <p><strong>Estimated Cost:</strong> <span id="summary-cost">₹0</span></p>
+                    <p><strong>Date:</strong> <span id="summary-date">-</span></p>
+                  </div>
+                </div>
+
+                <button type="submit" class="submit-button">
+                  <i class="fas fa-calendar-check"></i> Book Equipment
+                </button>
+              </form>
+            </div>
+
+            <div class="listings-container">
+              <div class="listings-header">
+                <h3>Your Bookings</h3>
+                <span class="listings-count" id="booking-count">0 Bookings</span>
+              </div>
+              <div id="booking-display">
+                <div class="empty-state">
+                  <i class="fas fa-tractor"></i>
+                  <p>No equipment bookings yet. Make your first booking!</p>
+                </div>
+              </div>
+
+              <!-- Available Equipment Info -->
+              <div class="equipment-info">
+                <h4><i class="fas fa-info-circle"></i> Available Equipment</h4>
+                <div class="equipment-grid">
+                  <div class="equipment-card">
+                    <i class="fas fa-tractor"></i>
+                    <h5>Tractors</h5>
+                    <p>50+ HP tractors available</p>
+                    <span class="price">₹350/hour</span>
+                  </div>
+                  <div class="equipment-card">
+                    <i class="fas fa-cogs"></i>
+                    <h5>Harvesters</h5>
+                    <p>Combine harvesters</p>
+                    <span class="price">₹500/hour</span>
+                  </div>
+                  <div class="equipment-card">
+                    <i class="fas fa-seedling"></i>
+                    <h5>Seeders</h5>
+                    <p>Precision seed drills</p>
+                    <span class="price">₹250/hour</span>
+                  </div>
+                  <div class="equipment-card">
+                    <i class="fas fa-spray-can"></i>
+                    <h5>Sprayers</h5>
+                    <p>Boom & knapsack sprayers</p>
+                    <span class="price">₹200/hour</span>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </section>
+      </main>
+
+      <div class="footer-info">
+        <p>🌱 Empowering farmers with technology for sustainable agriculture and better livelihoods</p>
+      </div>
+    </div>
+
+      <style>
+    .site-footer {background: linear-gradient(135deg,#2e7d32,#66bb6a); color:#fff; margin-top:auto; padding: 2rem 1.25rem;}
+    .site-footer .footer-inner {max-width:1200px;margin:0 auto; display:grid; grid-template-columns: repeat(auto-fit, minmax(220px,1fr)); gap:1.5rem; align-items:flex-start;}
+    .footer-brand {display:flex;flex-direction:column;gap:.5rem}
+    .footer-logo {width:48px;height:48px;border-radius:8px;object-fit:cover;background:#fff;padding:4px}
+    .site-footer h3,.site-footer h4{margin:0 0 .5rem 0}
+    .site-footer p {margin:0;opacity:.9}
+    .site-footer ul{list-style:none;padding:0;margin:0;display:flex;flex-direction:column;gap:.4rem}
+    .site-footer a{color:#fff;text-decoration:none;opacity:.9;transition:opacity .2s}
+    .site-footer a:hover{opacity:1;text-decoration:underline}
+    .footer-bottom{max-width:1200px;margin:1rem auto 0; padding-top:1rem; border-top:1px solid rgba(255,255,255,.25); text-align:center; font-size:.9rem; opacity:.9}
+    .social-media {display:flex;gap:1rem;margin-top:.5rem}
+    .social-media a{display:flex;align-items:center;justify-content:center;width:40px;height:40px;background:rgba(255,255,255,.1);border-radius:50%;transition:all .3s ease;font-size:1.2rem}
+    .social-media a:hover{background:rgba(255,255,255,.2);transform:translateY(-2px)}
+  </style>
+    <footer class="site-footer">
+      <div class="footer-inner">
+        <div class="footer-brand">
+          <img src="images/logo.png" alt="AgriTech logo" class="footer-logo">
+          <h3>AgriTech</h3>
+          <p>Empowering India's Farming Future</p>
+          <div class="social-media">
+            <a href="https://instagram.com" target="_blank" aria-label="Follow us on Instagram">
+              <i class="fab fa-instagram"></i>
+            </a>
+            <a href="https://github.com/omroy07" target="_blank" aria-label="View our GitHub repositories">
+              <i class="fab fa-github"></i>
+            </a>
+            <a href="https://www.linkedin.com/in/om-roy-3b809628a/" target="_blank" aria-label="Connect with us on LinkedIn">
+              <i class="fab fa-linkedin"></i>
+            </a>
+          </div>
+        </div>
+        <div class="footer-links">
+          <h4>Quick Links</h4>
+          <ul>
+            <li><a href="index.html">Home</a></li>
+            <li><a href="main.html">Dashboard</a></li>
+            <li><a href="feed-back.html">Feedback</a></li>
+            <li><a href="chat.html">AI Assistant</a></li>
+          </ul>
+        </div>
+        <div class="footer-links">
+          <h4>Tools</h4>
+          <ul>
+            <li><a href="Crop Recommendation/templates/index.html">Crop Recommendation</a></li>
+            <li><a href="Crop Yield Prediction/crop_yield_app/templates/index.html">Yield Prediction</a></li>
+            <li><a href="Disease prediction/template/index.html">Disease Detector</a></li>
+            <li><a href="Crop_Planning/templates/cropplan.html">Crop Planner</a></li>
+          </ul>
+        </div>
+      </div>
+      <div class="footer-bottom">© 2025 AgriTech • Made for farmers</div>
+    </footer>
+
+    <script src="theme.js"></script>
+    <script src="role-navigation.js"></script>
+    <script>
+      // Data storage
+      let products = JSON.parse(localStorage.getItem('farmerProducts') || '[]');
+      let buyRequests = JSON.parse(localStorage.getItem('farmerBuyRequests') || '[]');
+      let tractorBookings = JSON.parse(localStorage.getItem('farmerTractorBookings') || '[]');
+
+      // Initialize dashboard
+      document.addEventListener('DOMContentLoaded', function() {
+        loadUserInfo();
+        updateStatistics();
+        renderProducts();
+        renderBuyRequests();
+        renderTractorBookings();
+        setupTabNavigation();
+        setupForms();
+        setupBookingSummary();
+      });
+
+      // Load user information
+      function loadUserInfo() {
+        const userEmail = localStorage.getItem('userEmail');
+        const userName = localStorage.getItem('userName');
+        
+        if (userName) {
+          document.getElementById('user-name').textContent = userName.split(' ')[0];
+        } else if (userEmail) {
+          const name = userEmail.split('@')[0];
+          document.getElementById('user-name').textContent = name.charAt(0).toUpperCase() + name.slice(1);
+        }
+      }
+
+      // Update statistics
+      function updateStatistics() {
+        document.getElementById('product-stats').textContent = products.length;
+        document.getElementById('request-stats').textContent = buyRequests.length;
+        document.getElementById('booking-stats').textContent = tractorBookings.length;
+        
+        document.getElementById('product-count').textContent = `${products.length} Products`;
+        document.getElementById('request-count').textContent = `${buyRequests.length} Requests`;
+        document.getElementById('booking-count').textContent = `${tractorBookings.length} Bookings`;
+      }
+
+      // Tab navigation
+      function setupTabNavigation() {
+        const tabButtons = document.querySelectorAll('.tab-button');
+        const sections = document.querySelectorAll('.section');
+
+        tabButtons.forEach(button => {
+          button.addEventListener('click', () => {
+            const targetSection = button.getAttribute('data-section');
+            
+            // Remove active class from all tabs and sections
+            tabButtons.forEach(btn => btn.classList.remove('active'));
+            sections.forEach(section => section.classList.remove('active'));
+            
+            // Add active class to clicked tab and corresponding section
+            button.classList.add('active');
+            document.getElementById(`${targetSection}-section`).classList.add('active');
+          });
+        });
+      }
+
+      // Setup forms
+      function setupForms() {
+        // Product form
+        document.getElementById('product-form').addEventListener('submit', function(e) {
+          e.preventDefault();
+          addProduct();
+        });
+
+        // Buy request form
+        document.getElementById('buy-form').addEventListener('submit', function(e) {
+          e.preventDefault();
+          addBuyRequest();
+        });
+
+        // Tractor booking form
+        document.getElementById('tractor-form').addEventListener('submit', function(e) {
+          e.preventDefault();
+          addTractorBooking();
+        });
+      }
+
+      // Add product
+      function addProduct() {
+        const product = {
+          id: Date.now().toString(),
+          sellerName: document.getElementById('seller-name').value,
+          contact: document.getElementById('seller-contact').value,
+          name: document.getElementById('product-name').value,
+          quantity: document.getElementById('product-quantity').value,
+          price: document.getElementById('product-price').value,
+          dateAdded: new Date().toLocaleDateString()
+        };
+
+        products.push(product);
+        localStorage.setItem('farmerProducts', JSON.stringify(products));
+        
+        showSuccessMessage('Product added successfully!');
+        document.getElementById('product-form').reset();
+        renderProducts();
+        updateStatistics();
+      }
+
+      // Add buy request
+      function addBuyRequest() {
+        const request = {
+          id: Date.now().toString(),
+          buyerName: document.getElementById('buyer-name').value,
+          contact: document.getElementById('buyer-contact').value,
+          productName: document.getElementById('buy-product-name').value,
+          quantity: document.getElementById('buy-product-quantity').value,
+          dateRequested: new Date().toLocaleDateString()
+        };
+
+        buyRequests.push(request);
+        localStorage.setItem('farmerBuyRequests', JSON.stringify(buyRequests));
+        
+        showSuccessMessage('Buy request submitted successfully!');
+        document.getElementById('buy-form').reset();
+        renderBuyRequests();
+        updateStatistics();
+      }
+
+      // Add tractor booking
+      function addTractorBooking() {
+        const booking = {
+          id: 'TRB' + Date.now().toString().slice(-6),
+          farmerName: document.getElementById('farmer-name').value,
+          contact: document.getElementById('farmer-contact').value,
+          location: document.getElementById('farm-location').value,
+          farmArea: document.getElementById('farm-area').value,
+          equipmentType: document.getElementById('equipment-type').value,
+          date: document.getElementById('booking-date').value,
+          duration: document.getElementById('booking-duration').value,
+          workType: document.getElementById('work-type').value,
+          specialRequirements: document.getElementById('special-requirements').value,
+          cost: calculateBookingCost(),
+          status: 'pending',
+          requestTime: new Date().toLocaleString()
+        };
+
+        tractorBookings.push(booking);
+        localStorage.setItem('farmerTractorBookings', JSON.stringify(tractorBookings));
+        
+        // Also add to tractor owner requests
+        let tractorRequests = JSON.parse(localStorage.getItem('tractorBookingRequests') || '[]');
+        tractorRequests.push(booking);
+        localStorage.setItem('tractorBookingRequests', JSON.stringify(tractorRequests));
+        
+        showSuccessMessage('Equipment booking submitted successfully!');
+        document.getElementById('tractor-form').reset();
+        document.getElementById('booking-summary').style.display = 'none';
+        renderTractorBookings();
+        updateStatistics();
+      }
+
+      // Calculate booking cost
+      function calculateBookingCost() {
+        const duration = parseInt(document.getElementById('booking-duration').value) || 0;
+        const costPerHour = 350; // Base rate
+        return duration * costPerHour;
+      }
+
+      // Setup booking summary
+      function setupBookingSummary() {
+        const equipmentSelect = document.getElementById('equipment-type');
+        const durationSelect = document.getElementById('booking-duration');
+        const dateInput = document.getElementById('booking-date');
+
+        [equipmentSelect, durationSelect, dateInput].forEach(element => {
+          element.addEventListener('change', updateBookingSummary);
+        });
+      }
+
+      // Update booking summary
+      function updateBookingSummary() {
+        const equipment = document.getElementById('equipment-type').value;
+        const duration = document.getElementById('booking-duration').value;
+        const date = document.getElementById('booking-date').value;
+
+        if (equipment && duration && date) {
+          document.getElementById('booking-summary').style.display = 'block';
+          document.getElementById('summary-equipment').textContent = equipment;
+          document.getElementById('summary-duration').textContent = duration + ' hours';
+          document.getElementById('summary-cost').textContent = '₹' + calculateBookingCost().toLocaleString();
+          document.getElementById('summary-date').textContent = new Date(date).toLocaleDateString();
+        } else {
+          document.getElementById('booking-summary').style.display = 'none';
+        }
+      }
+
+      // Render products
+      function renderProducts() {
+        const container = document.getElementById('product-display');
+        
+        if (products.length === 0) {
+          container.innerHTML = `
+            <div class="empty-state">
+              <i class="fas fa-box-open"></i>
+              <p>No products listed yet. Add your first product!</p>
+            </div>
+          `;
+          return;
+        }
+
+        container.innerHTML = products.map(product => `
+          <div class="listing-item">
+            <div class="listing-header">
+              <div>
+                <div class="listing-title">${product.name}</div>
+                <div class="listing-price">${product.price}</div>
+              </div>
+              <button class="delete-btn" onclick="deleteProduct('${product.id}')">
+                <i class="fas fa-trash"></i> Delete
+              </button>
+            </div>
+            <div class="listing-details">
+              <div class="listing-detail">
+                <i class="fas fa-user"></i>
+                <span>${product.sellerName}</span>
+              </div>
+              <div class="listing-detail">
+                <i class="fas fa-phone"></i>
+                <span>${product.contact}</span>
+              </div>
+              <div class="listing-detail">
+                <i class="fas fa-weight"></i>
+                <span>${product.quantity}</span>
+              </div>
+              <div class="listing-detail">
+                <i class="fas fa-calendar"></i>
+                <span>${product.dateAdded}</span>
+              </div>
+            </div>
+          </div>
+        `).join('');
+      }
+
+      // Render buy requests
+      function renderBuyRequests() {
+        const container = document.getElementById('buy-request-display');
+        
+        if (buyRequests.length === 0) {
+          container.innerHTML = `
+            <div class="empty-state">
+              <i class="fas fa-clipboard-list"></i>
+              <p>No buy requests yet. Submit your first request!</p>
+            </div>
+          `;
+          return;
+        }
+
+        container.innerHTML = buyRequests.map(request => `
+          <div class="listing-item">
+            <div class="listing-header">
+              <div>
+                <div class="listing-title">Looking for: ${request.productName}</div>
+                <div class="listing-price">Quantity: ${request.quantity}</div>
+              </div>
+              <button class="delete-btn" onclick="deleteBuyRequest('${request.id}')">
+                <i class="fas fa-trash"></i> Delete
+              </button>
+            </div>
+            <div class="listing-details">
+              <div class="listing-detail">
+                <i class="fas fa-user"></i>
+                <span>${request.buyerName}</span>
+              </div>
+              <div class="listing-detail">
+                <i class="fas fa-phone"></i>
+                <span>${request.contact}</span>
+              </div>
+              <div class="listing-detail">
+                <i class="fas fa-calendar"></i>
+                <span>${request.dateRequested}</span>
+              </div>
+            </div>
+          </div>
+        `).join('');
+      }
+
+      // Render tractor bookings
+      function renderTractorBookings() {
+        const container = document.getElementById('booking-display');
+        
+        if (tractorBookings.length === 0) {
+          container.innerHTML = `
+            <div class="empty-state">
+              <i class="fas fa-tractor"></i>
+              <p>No equipment bookings yet. Make your first booking!</p>
+            </div>
+          `;
+          return;
+        }
+
+        container.innerHTML = tractorBookings.map(booking => `
+          <div class="listing-item">
+            <div class="listing-header">
+              <div>
+                <div class="listing-title">Booking #${booking.id}</div>
+                <div class="listing-price">₹${booking.cost.toLocaleString()}</div>
+              </div>
+              <span class="listings-count" style="background: ${getStatusColor(booking.status)};">
+                ${booking.status.toUpperCase()}
+              </span>
+            </div>
+            <div class="listing-details">
+              <div class="listing-detail">
+                <i class="fas fa-tractor"></i>
+                <span>${booking.equipmentType}</span>
+              </div>
+              <div class="listing-detail">
+                <i class="fas fa-calendar"></i>
+                <span>${booking.date}</span>
+              </div>
+              <div class="listing-detail">
+                <i class="fas fa-clock"></i>
+                <span>${booking.duration} hours</span>
+              </div>
+              <div class="listing-detail">
+                <i class="fas fa-map-marker-alt"></i>
+                <span>${booking.location}</span>
+              </div>
+            </div>
+          </div>
+        `).join('');
+      }
+
+      // Get status color
+      function getStatusColor(status) {
+        switch(status) {
+          case 'pending': return '#ff9800';
+          case 'confirmed': return '#4caf50';
+          case 'completed': return '#2196f3';
+          case 'rejected': return '#f44336';
+          default: return '#666';
+        }
+      }
+
+      // Delete functions
+      function deleteProduct(id) {
+        if (confirm('Are you sure you want to delete this product?')) {
+          products = products.filter(p => p.id !== id);
+          localStorage.setItem('farmerProducts', JSON.stringify(products));
+          renderProducts();
+          updateStatistics();
+          showSuccessMessage('Product deleted successfully!');
+        }
+      }
+
+      function deleteBuyRequest(id) {
+        if (confirm('Are you sure you want to delete this buy request?')) {
+          buyRequests = buyRequests.filter(r => r.id !== id);
+          localStorage.setItem('farmerBuyRequests', JSON.stringify(buyRequests));
+          renderBuyRequests();
+          updateStatistics();
+          showSuccessMessage('Buy request deleted successfully!');
+        }
+      }
+
+      // Show success message
+      function showSuccessMessage(message) {
+        const existingMessage = document.querySelector('.success-message');
+        if (existingMessage) {
+          existingMessage.remove();
+        }
+
+        const messageDiv = document.createElement('div');
+        messageDiv.className = 'success-message';
+        messageDiv.innerHTML = `<i class="fas fa-check-circle"></i> ${message}`;
+        
+        const container = document.querySelector('.container');
+        container.insertBefore(messageDiv, container.firstChild);
+        
+        setTimeout(() => {
+          messageDiv.remove();
+        }, 3000);
+      }
+
+      // Logout function
+      function logout() {
+        if (confirm('Are you sure you want to logout?')) {
+          localStorage.clear();
+          window.location.href = 'login.html';
+        }
+      }
+
+      // Add some interactive elements
+      document.querySelectorAll('.stat-card').forEach(card => {
+        card.addEventListener('click', function() {
+          const label = this.querySelector('.stat-label').textContent;
+          alert(`${label} details would be shown here in a full implementation.`);
+        });
+      });
+    </script>
+  </body>
+</html>

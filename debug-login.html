@@ -1,0 +1,154 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Debug Login - AgriTech</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            max-width: 800px;
+            margin: 50px auto;
+            padding: 20px;
+            background: #f5f5f5;
+        }
+        .debug-container {
+            background: white;
+            padding: 30px;
+            border-radius: 10px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        }
+        .debug-section {
+            margin: 20px 0;
+            padding: 15px;
+            border: 1px solid #ddd;
+            border-radius: 5px;
+        }
+        button {
+            background: #4caf50;
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 5px;
+            cursor: pointer;
+            margin: 5px;
+        }
+        button:hover {
+            background: #45a049;
+        }
+        .info {
+            background: #e3f2fd;
+            padding: 10px;
+            border-radius: 5px;
+            margin: 10px 0;
+        }
+        .error {
+            background: #ffebee;
+            padding: 10px;
+            border-radius: 5px;
+            margin: 10px 0;
+        }
+    </style>
+</head>
+<body>
+    <div class="debug-container">
+        <h1>🔧 AgriTech Login Debug Tool</h1>
+        
+        <div class="debug-section">
+            <h3>Current Login Status</h3>
+            <div id="loginStatus"></div>
+            <button onclick="checkLoginStatus()">Check Status</button>
+            <button onclick="clearAllData()">Clear All Data</button>
+        </div>
+
+        <div class="debug-section">
+            <h3>Test Farmer Login</h3>
+            <div class="info">
+                This will simulate a farmer login and redirect to main.html
+            </div>
+            <button onclick="testFarmerLogin()">Test Farmer Login</button>
+            <button onclick="directToFarmer()">Go Directly to Farmer Dashboard</button>
+        </div>
+
+        <div class="debug-section">
+            <h3>Available Pages</h3>
+            <button onclick="window.location.href='login.html'">Login Page</button>
+            <button onclick="window.location.href='main.html'">Main Dashboard</button>
+            <button onclick="window.location.href='main.html'">Farmer Dashboard (Now Main)</button>
+            <button onclick="window.location.href='buyer-dashboard.html'">Buyer Dashboard</button>
+        </div>
+
+        <div class="debug-section">
+            <h3>Debug Output</h3>
+            <div id="debugOutput"></div>
+        </div>
+    </div>
+
+    <script>
+        function log(message) {
+            const output = document.getElementById('debugOutput');
+            output.innerHTML += `<div>${new Date().toLocaleTimeString()}: ${message}</div>`;
+        }
+
+        function checkLoginStatus() {
+            const email = localStorage.getItem('userEmail');
+            const role = localStorage.getItem('userRole');
+            const name = localStorage.getItem('userName');
+            const token = localStorage.getItem('accessToken');
+            
+            const statusDiv = document.getElementById('loginStatus');
+            
+            if (email) {
+                statusDiv.innerHTML = `
+                    <div class="info">
+                        <strong>Logged In:</strong><br>
+                        Email: ${email}<br>
+                        Role: ${role || 'Not set'}<br>
+                        Name: ${name || 'Not set'}<br>
+                        Token: ${token ? 'Present' : 'Missing'}
+                    </div>
+                `;
+                log(`Login status checked - User: ${email}, Role: ${role}`);
+            } else {
+                statusDiv.innerHTML = '<div class="error">Not logged in</div>';
+                log('No login found');
+            }
+        }
+
+        function clearAllData() {
+            localStorage.clear();
+            log('All localStorage data cleared');
+            checkLoginStatus();
+        }
+
+        function testFarmerLogin() {
+            // Simulate farmer login
+            localStorage.setItem('userEmail', 'farmer@demo.com');
+            localStorage.setItem('userRole', 'farmer');
+            localStorage.setItem('userName', 'John Farmer');
+            localStorage.setItem('loginTime', Date.now().toString());
+            localStorage.setItem('accessToken', 'demo-token-' + Date.now());
+            
+            log('Farmer login simulated');
+            checkLoginStatus();
+            
+            // Redirect to farmer dashboard
+            setTimeout(() => {
+                log('Redirecting to main.html...');
+                window.location.href = 'main.html';
+            }, 1000);
+        }
+
+        function directToFarmer() {
+            log('Going directly to main.html');
+            window.location.href = 'main.html';
+        }
+
+        // Initialize
+        document.addEventListener('DOMContentLoaded', function() {
+            checkLoginStatus();
+            log('Debug tool initialized');
+        });
+    </script>
+</body>
+</html>

@@ -1,0 +1,611 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Buyer Dashboard - AgriTech Platform</title>
+    <link rel="icon" type="image/png" href="images/logo.png">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
+    <link rel="stylesheet" href="theme.css">
+    <style>
+        :root {
+            --primary-color: #2196f3;
+            --primary-dark: #1976d2;
+            --secondary-color: #4caf50;
+            --accent-color: #ff9800;
+            --success-color: #4caf50;
+            --warning-color: #ff9800;
+            --error-color: #f44336;
+            --text-primary: #333;
+            --text-secondary: #666;
+            --bg-primary: #ffffff;
+            --bg-secondary: #f8f9fa;
+            --border-color: #e0e0e0;
+            --shadow: 0 2px 10px rgba(0,0,0,0.1);
+            --shadow-hover: 0 8px 25px rgba(0,0,0,0.15);
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Poppins', sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            color: var(--text-primary);
+        }
+
+        .navbar {
+            background: rgba(255, 255, 255, 0.95);
+            backdrop-filter: blur(10px);
+            padding: 1rem 0;
+            box-shadow: var(--shadow);
+            position: sticky;
+            top: 0;
+            z-index: 1000;
+        }
+
+        .navbar-content {
+            max-width: 1200px;
+            margin: 0 auto;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 0 2rem;
+        }
+
+        .brand {
+            display: flex;
+            align-items: center;
+        }
+
+        .logo {
+            font-size: 1.5rem;
+            font-weight: 700;
+            color: var(--primary-color);
+            text-decoration: none;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .dashboard-badge {
+            display: inline-flex;
+            align-items: center;
+            gap: 0.5rem;
+            padding: 0.5rem 1rem;
+            border-radius: 20px;
+            font-size: 0.9rem;
+            font-weight: 600;
+            color: white;
+            margin-left: 1rem;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.2);
+            animation: pulse 2s infinite;
+            background: linear-gradient(135deg, #2196f3, #1976d2);
+        }
+
+        @keyframes pulse {
+            0% { box-shadow: 0 2px 8px rgba(0,0,0,0.2); }
+            50% { box-shadow: 0 4px 16px rgba(0,0,0,0.3); }
+            100% { box-shadow: 0 2px 8px rgba(0,0,0,0.2); }
+        }
+
+        .nav-buttons {
+            display: flex;
+            gap: 1rem;
+            align-items: center;
+        }
+
+        .user-info {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            padding: 0.5rem 1rem;
+            background: var(--bg-secondary);
+            border-radius: 25px;
+            font-size: 0.9rem;
+        }
+
+        .btn {
+            padding: 0.6rem 1.2rem;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            font-weight: 500;
+            transition: all 0.3s ease;
+            text-decoration: none;
+            display: inline-flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .btn-secondary {
+            background: var(--bg-secondary);
+            color: var(--text-primary);
+            border: 1px solid var(--border-color);
+        }
+
+        .btn-secondary:hover {
+            background: var(--border-color);
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 2rem;
+        }
+
+        .dashboard-header {
+            text-align: center;
+            margin-bottom: 3rem;
+            color: white;
+        }
+
+        .dashboard-header h1 {
+            font-size: 3rem;
+            font-weight: 700;
+            margin-bottom: 1rem;
+            text-shadow: 0 2px 4px rgba(0,0,0,0.3);
+        }
+
+        .dashboard-header p {
+            font-size: 1.2rem;
+            opacity: 0.9;
+            max-width: 600px;
+            margin: 0 auto;
+        }
+
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 1.5rem;
+            margin-bottom: 3rem;
+        }
+
+        .stat-card {
+            background: white;
+            padding: 2rem;
+            border-radius: 15px;
+            box-shadow: var(--shadow);
+            transition: all 0.3s ease;
+            text-align: center;
+        }
+
+        .stat-card:hover {
+            transform: translateY(-5px);
+            box-shadow: var(--shadow-hover);
+        }
+
+        .stat-icon {
+            font-size: 3rem;
+            margin-bottom: 1rem;
+            display: block;
+        }
+
+        .stat-number {
+            font-size: 2.5rem;
+            font-weight: 700;
+            color: var(--primary-color);
+            margin-bottom: 0.5rem;
+        }
+
+        .stat-label {
+            color: var(--text-secondary);
+            font-weight: 500;
+        }
+
+        .features-section {
+            background: white;
+            border-radius: 20px;
+            padding: 3rem;
+            box-shadow: var(--shadow);
+            margin-bottom: 3rem;
+        }
+
+        .section-title {
+            font-size: 2rem;
+            font-weight: 600;
+            margin-bottom: 2rem;
+            text-align: center;
+            color: var(--text-primary);
+        }
+
+        .features-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 2rem;
+        }
+
+        .feature-card {
+            background: var(--bg-secondary);
+            border-radius: 15px;
+            padding: 2rem;
+            text-decoration: none;
+            color: inherit;
+            transition: all 0.3s ease;
+            border: 2px solid transparent;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .feature-card::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 4px;
+            background: linear-gradient(90deg, var(--primary-color), var(--secondary-color));
+            transform: scaleX(0);
+            transition: transform 0.3s ease;
+        }
+
+        .feature-card:hover {
+            transform: translateY(-8px);
+            box-shadow: var(--shadow-hover);
+            border-color: var(--primary-color);
+        }
+
+        .feature-card:hover::before {
+            transform: scaleX(1);
+        }
+
+        .feature-icon {
+            font-size: 3rem;
+            margin-bottom: 1rem;
+            display: block;
+            text-align: center;
+        }
+
+        .feature-title {
+            font-size: 1.3rem;
+            font-weight: 600;
+            margin-bottom: 1rem;
+            text-align: center;
+        }
+
+        .feature-description {
+            color: var(--text-secondary);
+            text-align: center;
+            line-height: 1.6;
+            margin-bottom: 1.5rem;
+        }
+
+        .feature-badge {
+            display: inline-block;
+            background: var(--primary-color);
+            color: white;
+            padding: 0.3rem 0.8rem;
+            border-radius: 15px;
+            font-size: 0.8rem;
+            font-weight: 500;
+        }
+
+        .quick-actions {
+            background: white;
+            border-radius: 20px;
+            padding: 3rem;
+            box-shadow: var(--shadow);
+            margin-bottom: 3rem;
+        }
+
+        .actions-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 1.5rem;
+        }
+
+        .action-btn {
+            background: linear-gradient(135deg, var(--primary-color), var(--primary-dark));
+            color: white;
+            padding: 1.5rem;
+            border-radius: 12px;
+            text-decoration: none;
+            text-align: center;
+            transition: all 0.3s ease;
+            border: none;
+            cursor: pointer;
+            font-size: 1rem;
+        }
+
+        .action-btn:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 8px 25px rgba(33, 150, 243, 0.3);
+        }
+
+        .action-btn i {
+            display: block;
+            font-size: 2rem;
+            margin-bottom: 0.5rem;
+        }
+
+        .market-insights {
+            background: white;
+            border-radius: 20px;
+            padding: 3rem;
+            box-shadow: var(--shadow);
+        }
+
+        .insights-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 2rem;
+        }
+
+        .insight-card {
+            background: linear-gradient(135deg, #f8f9fa, #e9ecef);
+            padding: 2rem;
+            border-radius: 12px;
+            text-align: center;
+        }
+
+        .insight-value {
+            font-size: 2rem;
+            font-weight: 700;
+            color: var(--secondary-color);
+            margin-bottom: 0.5rem;
+        }
+
+        .insight-label {
+            color: var(--text-secondary);
+            font-weight: 500;
+        }
+
+        .footer-info {
+            text-align: center;
+            color: white;
+            margin-top: 3rem;
+            opacity: 0.8;
+        }
+
+        @media (max-width: 768px) {
+            .container {
+                padding: 1rem;
+            }
+            
+            .dashboard-header h1 {
+                font-size: 2rem;
+            }
+            
+            .features-grid {
+                grid-template-columns: 1fr;
+            }
+            
+            .navbar-content {
+                padding: 0 1rem;
+            }
+
+            .dashboard-badge {
+                font-size: 0.8rem;
+                padding: 0.4rem 0.8rem;
+                margin-left: 0.5rem;
+            }
+        }
+    </style>
+</head>
+<body>
+    <nav class="navbar">
+        <div class="navbar-content">
+            <div class="brand">
+                <a href="#" class="logo">
+                    <i class="fas fa-shopping-cart"></i>
+                    Buyer Dashboard
+                </a>
+                <span class="dashboard-badge">
+                    <i class="fas fa-shopping-cart"></i> Active: Buyer Dashboard
+                </span>
+            </div>
+            <div class="nav-buttons">
+                <div class="user-info">
+                    <i class="fas fa-user-circle"></i>
+                    <span id="user-name">Buyer</span>
+                </div>
+                <button class="theme-toggle btn btn-secondary" aria-label="Toggle dark/light mode">
+                    <i class="fas fa-sun sun-icon"></i>
+                    <i class="fas fa-moon moon-icon"></i>
+                </button>
+                <button class="btn btn-secondary" onclick="logout()">
+                    <i class="fas fa-sign-out-alt"></i>
+                    Logout
+                </button>
+            </div>
+        </div>
+    </nav>
+
+    <div class="container">
+        <div class="dashboard-header">
+            <h1><i class="fas fa-shopping-cart"></i> Buyer Dashboard</h1>
+            <p>Connect directly with farmers, access fresh produce, and leverage AI-powered market intelligence for smarter purchasing decisions</p>
+        </div>
+
+        <!-- Statistics Overview -->
+        <div class="stats-grid">
+            <div class="stat-card">
+                <i class="fas fa-users stat-icon" style="color: var(--primary-color);"></i>
+                <div class="stat-number">150+</div>
+                <div class="stat-label">Connected Farmers</div>
+            </div>
+            <div class="stat-card">
+                <i class="fas fa-seedling stat-icon" style="color: var(--secondary-color);"></i>
+                <div class="stat-number">50+</div>
+                <div class="stat-label">Crop Varieties</div>
+            </div>
+            <div class="stat-card">
+                <i class="fas fa-truck stat-icon" style="color: var(--accent-color);"></i>
+                <div class="stat-number">24/7</div>
+                <div class="stat-label">Supply Chain</div>
+            </div>
+            <div class="stat-card">
+                <i class="fas fa-certificate stat-icon" style="color: var(--success-color);"></i>
+                <div class="stat-number">100%</div>
+                <div class="stat-label">Quality Assured</div>
+            </div>
+        </div>
+
+        <!-- Main Features -->
+        <div class="features-section">
+            <h2 class="section-title">🎯 Buyer Features</h2>
+            <div class="features-grid">
+                <a href="Forum/forum.html" class="feature-card">
+                    <i class="fas fa-handshake feature-icon" style="color: var(--primary-color);"></i>
+                    <h3 class="feature-title">Connect with Farmers</h3>
+                    <p class="feature-description">Build direct relationships with verified farmers for consistent supply and better pricing</p>
+                    <span class="feature-badge">Direct Sourcing</span>
+                </a>
+
+                <a href="main.html" class="feature-card">
+                    <i class="fas fa-store feature-icon" style="color: var(--secondary-color);"></i>
+                    <h3 class="feature-title">Browse Marketplace</h3>
+                    <p class="feature-description">Explore our comprehensive marketplace with real-time inventory and competitive pricing</p>
+                    <span class="feature-badge">Live Inventory</span>
+                </a>
+
+                <a href="ollama-predictions.html" class="feature-card">
+                    <i class="fas fa-brain feature-icon" style="color: var(--accent-color);"></i>
+                    <h3 class="feature-title">AI Market Intelligence</h3>
+                    <p class="feature-description">Get AI-powered insights on crop availability, price trends, and demand forecasting</p>
+                    <span class="feature-badge">AI Powered</span>
+                </a>
+
+                <a href="organic.html" class="feature-card">
+                    <i class="fas fa-leaf feature-icon" style="color: var(--success-color);"></i>
+                    <h3 class="feature-title">Organic Produce</h3>
+                    <p class="feature-description">Access certified organic farmers and sustainable produce with full traceability</p>
+                    <span class="feature-badge">Certified Organic</span>
+                </a>
+
+                <a href="intercropping.html" class="feature-card">
+                    <i class="fas fa-chart-line feature-icon" style="color: var(--primary-color);"></i>
+                    <h3 class="feature-title">Crop Analytics</h3>
+                    <p class="feature-description">Understand intercropping benefits and seasonal availability patterns</p>
+                    <span class="feature-badge">Analytics</span>
+                </a>
+
+                <a href="disease-prediction.html" class="feature-card">
+                    <i class="fas fa-shield-alt feature-icon" style="color: var(--error-color);"></i>
+                    <h3 class="feature-title">Quality Monitoring</h3>
+                    <p class="feature-description">Monitor crop health and disease predictions to ensure quality sourcing</p>
+                    <span class="feature-badge">Quality Control</span>
+                </a>
+            </div>
+        </div>
+
+        <!-- Quick Actions -->
+        <div class="quick-actions">
+            <h2 class="section-title">⚡ Quick Actions</h2>
+            <div class="actions-grid">
+                <button class="action-btn" onclick="searchFarmers()">
+                    <i class="fas fa-search"></i>
+                    Find Farmers
+                </button>
+                <button class="action-btn" onclick="viewOrders()">
+                    <i class="fas fa-clipboard-list"></i>
+                    My Orders
+                </button>
+                <button class="action-btn" onclick="checkPrices()">
+                    <i class="fas fa-tags"></i>
+                    Price Alerts
+                </button>
+                <button class="action-btn" onclick="contactSupport()">
+                    <i class="fas fa-headset"></i>
+                    Support
+                </button>
+            </div>
+        </div>
+
+        <!-- Market Insights -->
+        <div class="market-insights">
+            <h2 class="section-title">📊 Market Insights</h2>
+            <div class="insights-grid">
+                <div class="insight-card">
+                    <div class="insight-value">₹45/kg</div>
+                    <div class="insight-label">Avg. Tomato Price</div>
+                </div>
+                <div class="insight-card">
+                    <div class="insight-value">85%</div>
+                    <div class="insight-label">Crop Availability</div>
+                </div>
+                <div class="insight-card">
+                    <div class="insight-value">12%</div>
+                    <div class="insight-label">Price Drop This Week</div>
+                </div>
+                <div class="insight-card">
+                    <div class="insight-value">3 Days</div>
+                    <div class="insight-label">Avg. Delivery Time</div>
+                </div>
+            </div>
+        </div>
+
+        <div class="footer-info">
+            <p>🌱 Empowering sustainable agriculture through direct farmer-buyer connections</p>
+        </div>
+    </div>
+
+    <script src="theme.js"></script>
+    <script src="role-navigation.js"></script>
+    <script>
+        // Initialize dashboard
+        document.addEventListener('DOMContentLoaded', function() {
+            loadUserInfo();
+            loadMarketData();
+        });
+
+        // Load user information
+        function loadUserInfo() {
+            const userEmail = localStorage.getItem('userEmail');
+            const userName = localStorage.getItem('userName');
+            
+            if (userName) {
+                document.getElementById('user-name').textContent = userName.split(' ')[0];
+            } else if (userEmail) {
+                const name = userEmail.split('@')[0];
+                document.getElementById('user-name').textContent = name.charAt(0).toUpperCase() + name.slice(1);
+            }
+        }
+
+        // Load market data (simulated)
+        function loadMarketData() {
+            console.log('Loading market data...');
+        }
+
+        // Quick action functions
+        function searchFarmers() {
+            window.location.href = 'Forum/forum.html';
+        }
+
+        function viewOrders() {
+            alert('Orders feature coming soon! This will show your purchase history and current orders.');
+        }
+
+        function checkPrices() {
+            alert('Price alerts feature coming soon! Set up notifications for price changes on your favorite crops.');
+        }
+
+        function contactSupport() {
+            alert('Support: For assistance, email support@agritech.com or call +91-XXXX-XXXX');
+        }
+
+        // Logout function
+        function logout() {
+            if (confirm('Are you sure you want to logout?')) {
+                localStorage.clear();
+                window.location.href = 'login.html';
+            }
+        }
+
+        // Add some interactive elements
+        document.querySelectorAll('.stat-card').forEach(card => {
+            card.addEventListener('click', function() {
+                const label = this.querySelector('.stat-label').textContent;
+                alert(`${label} details would be shown here in a full implementation.`);
+            });
+        });
+    </script>
+</body>
+</html>

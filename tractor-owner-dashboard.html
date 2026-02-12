@@ -1,0 +1,630 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Tractor Owner Dashboard - AgriTech</title>
+    <link rel="icon" type="image/png" href="images/logo.png">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
+    <link rel="stylesheet" href="theme.css">
+    <style>
+        :root {
+            --primary-color: #ff6b35;
+            --primary-dark: #e55a2b;
+            --secondary-color: #4caf50;
+            --accent-color: #2196f3;
+            --success-color: #4caf50;
+            --warning-color: #ff9800;
+            --error-color: #f44336;
+            --text-primary: #333;
+            --text-secondary: #666;
+            --bg-primary: #ffffff;
+            --bg-secondary: #f8f9fa;
+            --border-color: #e0e0e0;
+            --shadow: 0 2px 10px rgba(0,0,0,0.1);
+            --shadow-hover: 0 8px 25px rgba(0,0,0,0.15);
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Poppins', sans-serif;
+            background: linear-gradient(135deg, #ff6b35 0%, #f7931e 100%);
+            min-height: 100vh;
+            color: var(--text-primary);
+        }
+
+        .navbar {
+            background: rgba(255, 255, 255, 0.95);
+            backdrop-filter: blur(10px);
+            padding: 1rem 0;
+            box-shadow: var(--shadow);
+            position: sticky;
+            top: 0;
+            z-index: 1000;
+        }
+
+        .navbar-content {
+            max-width: 1200px;
+            margin: 0 auto;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 0 2rem;
+        }
+
+        .brand {
+            display: flex;
+            align-items: center;
+        }
+
+        .logo {
+            font-size: 1.5rem;
+            font-weight: 700;
+            color: var(--primary-color);
+            text-decoration: none;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .dashboard-badge {
+            display: inline-flex;
+            align-items: center;
+            gap: 0.5rem;
+            padding: 0.5rem 1rem;
+            border-radius: 20px;
+            font-size: 0.9rem;
+            font-weight: 600;
+            color: white;
+            margin-left: 1rem;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.2);
+            animation: pulse 2s infinite;
+            background: linear-gradient(135deg, #ff6b35, #e55a2b);
+        }
+
+        @keyframes pulse {
+            0% { box-shadow: 0 2px 8px rgba(0,0,0,0.2); }
+            50% { box-shadow: 0 4px 16px rgba(0,0,0,0.3); }
+            100% { box-shadow: 0 2px 8px rgba(0,0,0,0.2); }
+        }
+
+        .nav-buttons {
+            display: flex;
+            gap: 1rem;
+            align-items: center;
+        }
+
+        .user-info {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            padding: 0.5rem 1rem;
+            background: var(--bg-secondary);
+            border-radius: 25px;
+            font-size: 0.9rem;
+        }
+
+        .btn {
+            padding: 0.6rem 1.2rem;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            font-weight: 500;
+            transition: all 0.3s ease;
+            text-decoration: none;
+            display: inline-flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .btn-secondary {
+            background: var(--bg-secondary);
+            color: var(--text-primary);
+            border: 1px solid var(--border-color);
+        }
+
+        .btn-secondary:hover {
+            background: var(--border-color);
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 2rem;
+        }
+
+        .dashboard-header {
+            text-align: center;
+            margin-bottom: 3rem;
+            color: white;
+        }
+
+        .dashboard-header h1 {
+            font-size: 3rem;
+            font-weight: 700;
+            margin-bottom: 1rem;
+            text-shadow: 0 2px 4px rgba(0,0,0,0.3);
+        }
+
+        .dashboard-header p {
+            font-size: 1.2rem;
+            opacity: 0.9;
+            max-width: 600px;
+            margin: 0 auto;
+        }
+
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 1.5rem;
+            margin-bottom: 3rem;
+        }
+
+        .stat-card {
+            background: white;
+            padding: 2rem;
+            border-radius: 15px;
+            box-shadow: var(--shadow);
+            transition: all 0.3s ease;
+            text-align: center;
+        }
+
+        .stat-card:hover {
+            transform: translateY(-5px);
+            box-shadow: var(--shadow-hover);
+        }
+
+        .stat-icon {
+            font-size: 3rem;
+            margin-bottom: 1rem;
+            display: block;
+        }
+
+        .stat-number {
+            font-size: 2.5rem;
+            font-weight: 700;
+            color: var(--primary-color);
+            margin-bottom: 0.5rem;
+        }
+
+        .stat-label {
+            color: var(--text-secondary);
+            font-weight: 500;
+        }
+
+        .features-section {
+            background: white;
+            border-radius: 20px;
+            padding: 3rem;
+            box-shadow: var(--shadow);
+            margin-bottom: 3rem;
+        }
+
+        .section-title {
+            font-size: 2rem;
+            font-weight: 600;
+            margin-bottom: 2rem;
+            text-align: center;
+            color: var(--text-primary);
+        }
+
+        .features-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 2rem;
+        }
+
+        .feature-card {
+            background: var(--bg-secondary);
+            border-radius: 15px;
+            padding: 2rem;
+            text-decoration: none;
+            color: inherit;
+            transition: all 0.3s ease;
+            border: 2px solid transparent;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .feature-card::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 4px;
+            background: linear-gradient(90deg, var(--primary-color), var(--secondary-color));
+            transform: scaleX(0);
+            transition: transform 0.3s ease;
+        }
+
+        .feature-card:hover {
+            transform: translateY(-8px);
+            box-shadow: var(--shadow-hover);
+            border-color: var(--primary-color);
+        }
+
+        .feature-card:hover::before {
+            transform: scaleX(1);
+        }
+
+        .feature-icon {
+            font-size: 3rem;
+            margin-bottom: 1rem;
+            display: block;
+            text-align: center;
+        }
+
+        .feature-title {
+            font-size: 1.3rem;
+            font-weight: 600;
+            margin-bottom: 1rem;
+            text-align: center;
+        }
+
+        .feature-description {
+            color: var(--text-secondary);
+            text-align: center;
+            line-height: 1.6;
+            margin-bottom: 1.5rem;
+        }
+
+        .feature-badge {
+            display: inline-block;
+            background: var(--primary-color);
+            color: white;
+            padding: 0.3rem 0.8rem;
+            border-radius: 15px;
+            font-size: 0.8rem;
+            font-weight: 500;
+        }
+
+        .quick-actions {
+            background: white;
+            border-radius: 20px;
+            padding: 3rem;
+            box-shadow: var(--shadow);
+            margin-bottom: 3rem;
+        }
+
+        .actions-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 1.5rem;
+        }
+
+        .action-btn {
+            background: linear-gradient(135deg, var(--primary-color), var(--primary-dark));
+            color: white;
+            padding: 1.5rem;
+            border-radius: 12px;
+            text-decoration: none;
+            text-align: center;
+            transition: all 0.3s ease;
+            border: none;
+            cursor: pointer;
+            font-size: 1rem;
+        }
+
+        .action-btn:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 8px 25px rgba(255, 107, 53, 0.3);
+        }
+
+        .action-btn i {
+            display: block;
+            font-size: 2rem;
+            margin-bottom: 0.5rem;
+        }
+
+        .fleet-insights {
+            background: white;
+            border-radius: 20px;
+            padding: 3rem;
+            box-shadow: var(--shadow);
+        }
+
+        .insights-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 2rem;
+        }
+
+        .insight-card {
+            background: linear-gradient(135deg, #f8f9fa, #e9ecef);
+            padding: 2rem;
+            border-radius: 12px;
+            text-align: center;
+        }
+
+        .insight-value {
+            font-size: 2rem;
+            font-weight: 700;
+            color: var(--primary-color);
+            margin-bottom: 0.5rem;
+        }
+
+        .insight-label {
+            color: var(--text-secondary);
+            font-weight: 500;
+        }
+
+        .footer-info {
+            text-align: center;
+            color: white;
+            margin-top: 3rem;
+            opacity: 0.8;
+        }
+
+        @media (max-width: 768px) {
+            .container {
+                padding: 1rem;
+            }
+            
+            .dashboard-header h1 {
+                font-size: 2rem;
+            }
+            
+            .features-grid {
+                grid-template-columns: 1fr;
+            }
+            
+            .navbar-content {
+                padding: 0 1rem;
+            }
+
+            .dashboard-badge {
+                font-size: 0.8rem;
+                padding: 0.4rem 0.8rem;
+                margin-left: 0.5rem;
+            }
+        }
+    </style>
+</head>
+<body>
+    <nav class="navbar">
+        <div class="navbar-content">
+            <div class="brand">
+                <a href="#" class="logo">
+                    <i class="fas fa-tractor"></i>
+                    Tractor Owner Dashboard
+                </a>
+                <span class="dashboard-badge">
+                    <i class="fas fa-tractor"></i> Active: Tractor Owner Dashboard
+                </span>
+            </div>
+            <div class="nav-buttons">
+                <div class="user-info">
+                    <i class="fas fa-user-circle"></i>
+                    <span id="user-name">Tractor Owner</span>
+                </div>
+                <button class="theme-toggle btn btn-secondary" aria-label="Toggle dark/light mode">
+                    <i class="fas fa-sun sun-icon"></i>
+                    <i class="fas fa-moon moon-icon"></i>
+                </button>
+                <button class="btn btn-secondary" onclick="logout()">
+                    <i class="fas fa-sign-out-alt"></i>
+                    Logout
+                </button>
+            </div>
+        </div>
+    </nav>
+
+    <div class="container">
+        <div class="dashboard-header">
+            <h1><i class="fas fa-tractor"></i> Tractor Owner Dashboard</h1>
+            <p>Manage your equipment fleet, handle booking requests, and maximize your rental income through our platform</p>
+        </div>
+
+        <!-- Statistics Overview -->
+        <div class="stats-grid">
+            <div class="stat-card">
+                <i class="fas fa-calendar-check stat-icon" style="color: var(--success-color);"></i>
+                <div class="stat-number" id="total-bookings">12</div>
+                <div class="stat-label">Total Bookings</div>
+            </div>
+            <div class="stat-card">
+                <i class="fas fa-clock stat-icon" style="color: var(--warning-color);"></i>
+                <div class="stat-number" id="pending-requests">3</div>
+                <div class="stat-label">Pending Requests</div>
+            </div>
+            <div class="stat-card">
+                <i class="fas fa-tractor stat-icon" style="color: var(--primary-color);"></i>
+                <div class="stat-number" id="active-tractors">5</div>
+                <div class="stat-label">Active Tractors</div>
+            </div>
+            <div class="stat-card">
+                <i class="fas fa-rupee-sign stat-icon" style="color: var(--accent-color);"></i>
+                <div class="stat-number" id="monthly-earnings">₹45,000</div>
+                <div class="stat-label">Monthly Earnings</div>
+            </div>
+        </div>
+
+        <!-- Main Features -->
+        <div class="features-section">
+            <h2 class="section-title">🚜 Tractor Owner Features</h2>
+            <div class="features-grid">
+                <a href="#booking-requests" class="feature-card" onclick="showBookingRequests()">
+                    <i class="fas fa-clipboard-list feature-icon" style="color: var(--primary-color);"></i>
+                    <h3 class="feature-title">Manage Booking Requests</h3>
+                    <p class="feature-description">Review and respond to farmer booking requests for your equipment</p>
+                    <span class="feature-badge">Real-time</span>
+                </a>
+
+                <a href="#fleet-management" class="feature-card" onclick="showFleetManagement()">
+                    <i class="fas fa-tools feature-icon" style="color: var(--secondary-color);"></i>
+                    <h3 class="feature-title">Fleet Management</h3>
+                    <p class="feature-description">Track your equipment status, maintenance schedules, and availability</p>
+                    <span class="feature-badge">Comprehensive</span>
+                </a>
+
+                <a href="#earnings-tracker" class="feature-card" onclick="showEarningsTracker()">
+                    <i class="fas fa-chart-line feature-icon" style="color: var(--accent-color);"></i>
+                    <h3 class="feature-title">Earnings Tracker</h3>
+                    <p class="feature-description">Monitor your rental income and analyze booking patterns</p>
+                    <span class="feature-badge">Analytics</span>
+                </a>
+
+                <a href="#maintenance-alerts" class="feature-card" onclick="showMaintenanceAlerts()">
+                    <i class="fas fa-wrench feature-icon" style="color: var(--warning-color);"></i>
+                    <h3 class="feature-title">Maintenance Alerts</h3>
+                    <p class="feature-description">Get notified about upcoming maintenance and service requirements</p>
+                    <span class="feature-badge">Proactive</span>
+                </a>
+
+                <a href="#farmer-network" class="feature-card" onclick="showFarmerNetwork()">
+                    <i class="fas fa-users feature-icon" style="color: var(--success-color);"></i>
+                    <h3 class="feature-title">Farmer Network</h3>
+                    <p class="feature-description">Connect with local farmers and build long-term rental relationships</p>
+                    <span class="feature-badge">Community</span>
+                </a>
+
+                <a href="#pricing-optimizer" class="feature-card" onclick="showPricingOptimizer()">
+                    <i class="fas fa-tags feature-icon" style="color: var(--primary-color);"></i>
+                    <h3 class="feature-title">Smart Pricing</h3>
+                    <p class="feature-description">Optimize your rental rates based on demand and seasonal patterns</p>
+                    <span class="feature-badge">AI Powered</span>
+                </a>
+            </div>
+        </div>
+
+        <!-- Quick Actions -->
+        <div class="quick-actions">
+            <h2 class="section-title">⚡ Quick Actions</h2>
+            <div class="actions-grid">
+                <button class="action-btn" onclick="viewPendingRequests()">
+                    <i class="fas fa-bell"></i>
+                    View Pending Requests
+                </button>
+                <button class="action-btn" onclick="updateAvailability()">
+                    <i class="fas fa-calendar-alt"></i>
+                    Update Availability
+                </button>
+                <button class="action-btn" onclick="scheduleMaintenace()">
+                    <i class="fas fa-wrench"></i>
+                    Schedule Maintenance
+                </button>
+                <button class="action-btn" onclick="contactSupport()">
+                    <i class="fas fa-headset"></i>
+                    Get Support
+                </button>
+            </div>
+        </div>
+
+        <!-- Fleet Insights -->
+        <div class="fleet-insights">
+            <h2 class="section-title">📊 Fleet Performance</h2>
+            <div class="insights-grid">
+                <div class="insight-card">
+                    <div class="insight-value">85%</div>
+                    <div class="insight-label">Fleet Utilization</div>
+                </div>
+                <div class="insight-card">
+                    <div class="insight-value">₹1,200</div>
+                    <div class="insight-label">Avg. Daily Revenue</div>
+                </div>
+                <div class="insight-card">
+                    <div class="insight-value">4.8/5</div>
+                    <div class="insight-label">Customer Rating</div>
+                </div>
+                <div class="insight-card">
+                    <div class="insight-value">24hrs</div>
+                    <div class="insight-label">Avg. Response Time</div>
+                </div>
+            </div>
+        </div>
+
+        <div class="footer-info">
+            <p>🚜 Maximizing agricultural productivity through efficient equipment sharing</p>
+        </div>
+    </div>
+
+    <script src="theme.js"></script>
+    <script src="role-navigation.js"></script>
+    <script>
+        // Initialize dashboard
+        document.addEventListener('DOMContentLoaded', function() {
+            loadUserInfo();
+        });
+
+        // Load user information
+        function loadUserInfo() {
+            const userEmail = localStorage.getItem('userEmail');
+            const userName = localStorage.getItem('userName');
+            
+            if (userName) {
+                document.getElementById('user-name').textContent = userName.split(' ')[0];
+            } else if (userEmail) {
+                const name = userEmail.split('@')[0];
+                document.getElementById('user-name').textContent = name.charAt(0).toUpperCase() + name.slice(1);
+            }
+        }
+
+        // Feature functions
+        function showBookingRequests() {
+            alert('Booking Requests: Manage farmer equipment rental requests and approve/reject bookings!');
+        }
+
+        function showFleetManagement() {
+            alert('Fleet Management: Track your equipment status, maintenance schedules, and availability!');
+        }
+
+        function showEarningsTracker() {
+            alert('Earnings Tracker: Monitor rental income and analyze booking patterns!');
+        }
+
+        function showMaintenanceAlerts() {
+            alert('Maintenance Alerts: Get notified about upcoming service requirements!');
+        }
+
+        function showFarmerNetwork() {
+            alert('Farmer Network: Connect with local farmers and build rental relationships!');
+        }
+
+        function showPricingOptimizer() {
+            alert('Smart Pricing: Optimize rental rates based on demand and seasonal patterns!');
+        }
+
+        // Quick action functions
+        function viewPendingRequests() {
+            alert('Pending Requests: You have 3 new booking requests from farmers!');
+        }
+
+        function updateAvailability() {
+            alert('Update Availability: Set your equipment availability schedule!');
+        }
+
+        function scheduleMaintenace() {
+            alert('Schedule Maintenance: Plan maintenance for your equipment fleet!');
+        }
+
+        function contactSupport() {
+            alert('Support: For assistance, email support@agritech.com or call +91-XXXX-XXXX');
+        }
+
+        // Logout function
+        function logout() {
+            if (confirm('Are you sure you want to logout?')) {
+                localStorage.clear();
+                window.location.href = 'login.html';
+            }
+        }
+
+        // Add some interactive elements
+        document.querySelectorAll('.stat-card').forEach(card => {
+            card.addEventListener('click', function() {
+                const label = this.querySelector('.stat-label').textContent;
+                alert(`${label} details would be shown here in a full implementation.`);
+            });
+        });
+    </script>
+</body>
+</html>
