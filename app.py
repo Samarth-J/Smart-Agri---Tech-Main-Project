@@ -167,54 +167,272 @@ def get_firebase_config():
 
 @app.route('/predict', methods=['POST'])
 def predict_crop():
-    """Handle crop recommendation prediction"""
+    """Handle crop recommendation prediction using Llama3 AI"""
     try:
-        # Import required libraries for crop prediction
-        import joblib
-        import numpy as np
-        
-        # Load the model (you might need to adjust the path)
-        model_path = 'Crop Recommendation/model/rf_model.pkl'
-        encoder_path = 'Crop Recommendation/model/label_encoder.pkl'
-        
-        if not os.path.exists(model_path) or not os.path.exists(encoder_path):
-            return jsonify({"status": "error", "message": "Model files not found"}), 500
-            
-        model = joblib.load(model_path)
-        label_encoder = joblib.load(encoder_path)
-        
         # Get form data
-        data = [
-            float(request.form.get('N', 0)),
-            float(request.form.get('P', 0)),
-            float(request.form.get('K', 0)),
-            float(request.form.get('temperature', 0)),
-            float(request.form.get('humidity', 0)),
-            float(request.form.get('ph', 0)),
-            float(request.form.get('rainfall', 0))
-        ]
+        N = float(request.form.get('N', 0))
+        P = float(request.form.get('P', 0))
+        K = float(request.form.get('K', 0))
+        temperature = float(request.form.get('temperature', 0))
+        humidity = float(request.form.get('humidity', 0))
+        ph = float(request.form.get('ph', 0))
+        rainfall = float(request.form.get('rainfall', 0))
         
-        # Make prediction
-        prediction_num = model.predict([data])[0]
-        prediction_label = label_encoder.inverse_transform([prediction_num])[0]
+        # Create agricultural expert prompt for Llama3
+        prompt = f"""You are an expert agricultural scientist specializing in crop recommendation based on soil and climate conditions.
+
+Analyze the following soil and environmental parameters and recommend the SINGLE BEST crop to grow:
+
+Soil Nutrients:
+- Nitrogen (N): {N} kg/ha
+- Phosphorus (P): {P} kg/ha
+- Potassium (K): {K} kg/ha
+- pH Level: {ph}
+
+Climate Conditions:
+- Temperature: {temperature}°C
+- Humidity: {humidity}%
+- Rainfall: {rainfall} mm
+
+Based on these parameters, provide:
+1. The SINGLE BEST recommended crop name (just the crop name, one word)
+2. A brief explanation (2-3 sentences) why this crop is ideal for these conditions
+3. Expected yield potential (High/Medium/Low)
+4. Key growing tips (2-3 bullet points)
+
+Format your response EXACTLY as follows:
+CROP: [crop name]
+REASON: [explanation]
+YIELD: [High/Medium/Low]
+TIPS:
+- [tip 1]
+- [tip 2]
+- [tip 3]
+
+Common crops to consider: rice, wheat, maize, chickpea, kidneybeans, pigeonpeas, mothbeans, mungbean, blackgram, lentil, pomegranate, banana, mango, grapes, watermelon, muskmelon, apple, orange, papaya, coconut, cotton, jute, coffee"""
+
+        print(f"Calling Ollama with Llama3 for crop recommendation...")
         
-        return jsonify({
-            "status": "success", 
-            "crop": prediction_label,
-            "message": f"Recommended crop: {prediction_label}",
-            "input_params": {
-                "N": data[0],
-                "P": data[1], 
-                "K": data[2],
-                "temperature": data[3],
-                "humidity": data[4],
-                "ph": data[5],
-                "rainfall": data[6]
+        # Call Ollama API with Llama3
+        ollama_payload = {
+            "model": OLLAMA_MODEL,
+            "prompt": prompt,
+            "stream": False,
+            "options": {
+                "temperature": 0.3,  # Lower temperature for more consistent recommendations
+                "top_p": 0.9,
+                "num_predict": 400,
+                "num_ctx": 2048,
             }
-        }), 200
+        }
         
+        response = requests.post(
+            f"{OLLAMA_BASE_URL}/api/generate",
+            json=ollama_payload,
+            timeout=60
+        )
+        
+        if response.status_code == 200:
+            ollama_response = response.json()
+            ai_response = ollama_response.get('response', '')
+            
+            print(f"Llama3 Response: {ai_response}")
+            
+            # Parse the response
+            crop_name = "Unknown"
+            reason = "Analysis completed"
+            yield_potential = "Medium"
+            tips = []
+            
+            lines = ai_response.split('\n')
+            for i, line in enumerate(lines):
+                if line.startswith('CROP:'):
+                    crop_name = line.replace('CROP:', '').strip().lower()
+                elif line.startswith('REASON:'):
+                    reason = line.replace('REASON:', '').strip()
+                elif line.startswith('YIELD:'):
+                    yield_potential = line.replace('YIELD:', '').strip()
+                elif line.startswith('TIPS:'):
+                    # Collect tips from following lines
+                    for j in range(i+1, min(i+5, len(lines))):
+                        if lines[j].strip().startswith('-'):
+                            tips.append(lines[j].strip()[1:].strip())
+            
+            return jsonify({
+                "status": "success",
+                "crop": crop_name,
+                "reason": reason,
+                "yield_potential": yield_potential,
+                "tips": tips,
+                "full_analysis": ai_response,
+                "input_params": {
+                    "N": N,
+                    "P": P,
+                    "K": K,
+                    "temperature": temperature,
+                    "humidity": humidity,
+                    "ph": ph,
+                    "rainfall": rainfall
+                },
+                "model": OLLAMA_MODEL
+            }), 200
+        else:
+            print(f"Ollama API error: {response.status_code}")
+            return jsonify({"status": "error", "message": "AI service temporarily unavailable"}), 500
+        
+    except requests.exceptions.Timeout:
+        print("Ollama request timeout")
+        return jsonify({"status": "error", "message": "AI service timeout - please try again"}), 500
     except Exception as e:
         print(f"Crop prediction error: {e}")
+        traceback.print_exc()
+        return jsonify({"status": "error", "message": str(e)}), 500
+
+
+@app.route('/crop-requirements', methods=['POST'])
+def crop_requirements():
+    """Get ideal growing conditions for a specific crop - Knowledge Base + AI Fallback"""
+    try:
+        from crop_knowledge_base import get_crop_requirements, CROP_DATABASE
+        
+        # Get crop name from request
+        data = request.get_json() if request.is_json else request.form
+        crop_name = data.get('crop_name', '').strip()
+        
+        if not crop_name:
+            return jsonify({"status": "error", "message": "Crop name is required"}), 400
+        
+        print(f"Getting requirements for crop: {crop_name}")
+        
+        # Try knowledge base first for instant response
+        result = get_crop_requirements(crop_name)
+        
+        if result['status'] == 'success' and 'note' not in result:
+            # Found exact match in knowledge base - instant response!
+            print(f"✅ Found in knowledge base: {result['crop']}")
+            return jsonify({
+                **result,
+                "model": "Knowledge Base (Instant)",
+                "source": "database"
+            }), 200
+        
+        # Crop not in knowledge base - use AI
+        print(f"⚠️ Crop '{crop_name}' not in knowledge base, using Llama3 AI...")
+        
+        # Create prompt for Llama3
+        prompt = f"""You are an expert agricultural scientist. Provide detailed growing requirements for {crop_name}.
+
+Provide the IDEAL growing conditions for {crop_name} in the following format:
+
+CROP: {crop_name}
+SOIL_REQUIREMENTS:
+- Nitrogen (N): [range] kg/ha
+- Phosphorus (P): [range] kg/ha
+- Potassium (K): [range] kg/ha
+- pH Level: [range]
+- Soil Type: [type]
+
+CLIMATE_REQUIREMENTS:
+- Temperature: [range]°C
+- Humidity: [range]%
+- Rainfall: [range] mm
+- Season: [best season]
+
+GROWING_TIPS:
+- [tip 1]
+- [tip 2]
+- [tip 3]
+
+HARVEST_INFO:
+- Growing Duration: [duration]
+- Best Harvest Time: [time]
+- Expected Yield: [yield info]
+
+Provide specific numerical ranges and practical information."""
+
+        # Call Ollama API
+        ollama_payload = {
+            "model": OLLAMA_MODEL,
+            "prompt": prompt,
+            "stream": False,
+            "options": {
+                "temperature": 0.3,
+                "top_p": 0.9,
+                "num_predict": 600,
+                "num_ctx": 2048,
+            }
+        }
+        
+        response = requests.post(
+            f"{OLLAMA_BASE_URL}/api/generate",
+            json=ollama_payload,
+            timeout=120
+        )
+        
+        if response.status_code == 200:
+            ollama_response = response.json()
+            ai_response = ollama_response.get('response', '')
+            
+            print(f"✅ Llama3 Response received")
+            
+            # Parse the response into sections
+            sections = {
+                'crop': crop_name.title(),
+                'soil_requirements': [],
+                'climate_requirements': [],
+                'growing_tips': [],
+                'harvest_info': [],
+                'full_response': ai_response
+            }
+            
+            current_section = None
+            lines = ai_response.split('\n')
+            
+            for line in lines:
+                line = line.strip()
+                # Remove markdown bold markers
+                line = line.replace('**', '')
+                
+                if 'SOIL_REQUIREMENTS:' in line or 'SOIL REQUIREMENTS:' in line:
+                    current_section = 'soil_requirements'
+                elif 'CLIMATE_REQUIREMENTS:' in line or 'CLIMATE REQUIREMENTS:' in line:
+                    current_section = 'climate_requirements'
+                elif 'GROWING_TIPS:' in line or 'GROWING TIPS:' in line:
+                    current_section = 'growing_tips'
+                elif 'HARVEST_INFO:' in line or 'HARVEST INFO:' in line or 'HARVEST_INFORMATION:' in line:
+                    current_section = 'harvest_info'
+                elif (line.startswith('-') or line.startswith('*') or line.startswith('•')) and current_section:
+                    # Remove bullet point markers
+                    clean_line = line.lstrip('-*•').strip()
+                    if clean_line and len(clean_line) > 5:  # Avoid empty or very short lines
+                        sections[current_section].append(clean_line)
+            
+            return jsonify({
+                "status": "success",
+                "crop": crop_name.title(),
+                "soil_requirements": sections['soil_requirements'],
+                "climate_requirements": sections['climate_requirements'],
+                "growing_tips": sections['growing_tips'],
+                "harvest_info": sections['harvest_info'],
+                "model": f"{OLLAMA_MODEL} (AI Generated)",
+                "source": "ai",
+                "note": f"Generated by AI - not in knowledge base. Available crops: {', '.join(list(CROP_DATABASE.keys())[:5])}..."
+            }), 200
+        else:
+            print(f"❌ Ollama API error: {response.status_code}")
+            return jsonify({
+                "status": "error", 
+                "message": f"AI service error. Available crops in knowledge base: {', '.join(CROP_DATABASE.keys())}"
+            }), 500
+        
+    except requests.exceptions.Timeout:
+        print("❌ Ollama request timeout")
+        return jsonify({
+            "status": "error", 
+            "message": f"AI service timeout. Try one of these crops for instant results: {', '.join(list(CROP_DATABASE.keys())[:5])}"
+        }), 500
+    except Exception as e:
+        print(f"❌ Crop requirements error: {e}")
         traceback.print_exc()
         return jsonify({"status": "error", "message": str(e)}), 500
 

@@ -1,0 +1,105 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Test Crop Requirements</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            max-width: 600px;
+            margin: 50px auto;
+            padding: 20px;
+        }
+        input, button {
+            padding: 10px;
+            margin: 10px 0;
+            width: 100%;
+            font-size: 16px;
+        }
+        button {
+            background: #2e7d32;
+            color: white;
+            border: none;
+            cursor: pointer;
+            border-radius: 5px;
+        }
+        #result {
+            margin-top: 20px;
+            padding: 20px;
+            background: #f0f0f0;
+            border-radius: 5px;
+        }
+    </style>
+</head>
+<body>
+    <h1>Test Crop Requirements API</h1>
+    <input type="text" id="cropInput" placeholder="Enter crop name (e.g., tomato, rice)" value="rice">
+    <button onclick="getCropRequirements()">Get Requirements</button>
+    <div id="result"></div>
+
+    <script>
+        async function getCropRequirements() {
+            const cropName = document.getElementById('cropInput').value;
+            const resultDiv = document.getElementById('result');
+            
+            resultDiv.innerHTML = 'Loading...';
+            
+            try {
+                const response = await fetch('http://127.0.0.1:5000/crop-requirements', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({ crop_name: cropName })
+                });
+                
+                const result = await response.json();
+                
+                if (result.status === 'success') {
+                    let html = `<h2>${result.crop}</h2>`;
+                    
+                    if (result.soil_requirements && result.soil_requirements.length > 0) {
+                        html += '<h3>Soil Requirements:</h3><ul>';
+                        result.soil_requirements.forEach(req => {
+                            html += `<li>${req}</li>`;
+                        });
+                        html += '</ul>';
+                    }
+                    
+                    if (result.climate_requirements && result.climate_requirements.length > 0) {
+                        html += '<h3>Climate Requirements:</h3><ul>';
+                        result.climate_requirements.forEach(req => {
+                            html += `<li>${req}</li>`;
+                        });
+                        html += '</ul>';
+                    }
+                    
+                    if (result.growing_tips && result.growing_tips.length > 0) {
+                        html += '<h3>Growing Tips:</h3><ul>';
+                        result.growing_tips.forEach(tip => {
+                            html += `<li>${tip}</li>`;
+                        });
+                        html += '</ul>';
+                    }
+                    
+                    if (result.harvest_info && result.harvest_info.length > 0) {
+                        html += '<h3>Harvest Info:</h3><ul>';
+                        result.harvest_info.forEach(info => {
+                            html += `<li>${info}</li>`;
+                        });
+                        html += '</ul>';
+                    }
+                    
+                    resultDiv.innerHTML = html;
+                } else {
+                    resultDiv.innerHTML = `<p style="color: red;">Error: ${result.message}</p>`;
+                }
+            } catch (error) {
+                resultDiv.innerHTML = `<p style="color: red;">Error: ${error.message}</p>`;
+                console.error('Error:', error);
+            }
+        }
+    </script>
+</body>
+</html>
