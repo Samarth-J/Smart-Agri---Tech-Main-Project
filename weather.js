@@ -19,7 +19,18 @@ const elements = {
     wind: document.getElementById('wind'),
     visibility: document.getElementById('visibility'),
     hourlyForecast: document.getElementById('hourlyForecast'),
-    dailyForecast: document.getElementById('dailyForecast')
+    dailyForecast: document.getElementById('dailyForecast'),
+    // AQI elements
+    aqiContainer: document.getElementById('aqiContainer'),
+    aqi: document.getElementById('aqi'),
+    airQualityDetails: document.getElementById('airQualityDetails'),
+    pm25: document.getElementById('pm25'),
+    pm10: document.getElementById('pm10'),
+    co: document.getElementById('co'),
+    no2: document.getElementById('no2'),
+    o3: document.getElementById('o3'),
+    so2: document.getElementById('so2'),
+    aqiDescription: document.getElementById('aqiDescription')
 };
 
 // Initialize on page load
@@ -77,8 +88,8 @@ async function fetchWeather(location) {
     try {
         // Fetch current weather and forecast in parallel for faster loading
         const [currentData, forecastData] = await Promise.all([
-            fetch(`${API_URL}/current.json?key=${API_KEY}&q=${location}`).then(r => r.json()),
-            fetch(`${API_URL}/forecast.json?key=${API_KEY}&q=${location}&days=10`).then(r => r.json())
+            fetch(`${API_URL}/current.json?key=${API_KEY}&q=${location}&aqi=yes`).then(r => r.json()),
+            fetch(`${API_URL}/forecast.json?key=${API_KEY}&q=${location}&days=10&aqi=yes`).then(r => r.json())
         ]);
 
         // Check for errors
@@ -88,6 +99,7 @@ async function fetchWeather(location) {
 
         // Display all data
         displayCurrentWeather(currentData);
+        displayAirQuality(currentData);
         displayHourlyForecast(forecastData);
         displayDailyForecast(forecastData);
         updateBackground(currentData.current.condition.text);
@@ -112,6 +124,92 @@ function displayCurrentWeather(data) {
     elements.humidity.textContent = `${current.humidity}%`;
     elements.wind.textContent = `${current.wind_kph} km/h`;
     elements.visibility.textContent = `${current.vis_km} km`;
+    
+    // Update 3D weather scene
+    const isDay = current.is_day === 1;
+    if (window.weatherScene) {
+        window.weatherScene.updateWeatherCondition(current.condition.text, isDay);
+    }
+}
+
+// Display air quality data
+function displayAirQuality(data) {
+    const airQuality = data.current.air_quality;
+    
+    if (!airQuality) {
+        elements.aqiContainer.style.display = 'none';
+        elements.airQualityDetails.style.display = 'none';
+        return;
+    }
+    
+    // Get US EPA Index (most commonly used)
+    const aqiValue = Math.round(airQuality['us-epa-index'] || 0);
+    
+    if (aqiValue > 0) {
+        elements.aqiContainer.style.display = 'block';
+        elements.airQualityDetails.style.display = 'block';
+        
+        // Display AQI value with color coding
+        const aqiInfo = getAQIInfo(aqiValue);
+        elements.aqi.textContent = aqiValue;
+        elements.aqi.style.color = aqiInfo.color;
+        
+        // Update icon color
+        const aqiIcon = elements.aqiContainer.querySelector('i');
+        if (aqiIcon) {
+            aqiIcon.style.color = aqiInfo.color;
+        }
+        
+        // Display pollutant details
+        elements.pm25.textContent = `${airQuality.pm2_5.toFixed(1)} μg/m³`;
+        elements.pm10.textContent = `${airQuality.pm10.toFixed(1)} μg/m³`;
+        elements.co.textContent = `${airQuality.co.toFixed(1)} μg/m³`;
+        elements.no2.textContent = `${airQuality.no2.toFixed(1)} μg/m³`;
+        elements.o3.textContent = `${airQuality.o3.toFixed(1)} μg/m³`;
+        elements.so2.textContent = `${airQuality.so2.toFixed(1)} μg/m³`;
+        
+        // Display AQI description
+        elements.aqiDescription.textContent = aqiInfo.description;
+        elements.aqiDescription.style.color = aqiInfo.color;
+    } else {
+        elements.aqiContainer.style.display = 'none';
+        elements.airQualityDetails.style.display = 'none';
+    }
+}
+
+// Get AQI information based on value
+function getAQIInfo(aqi) {
+    if (aqi <= 1) {
+        return {
+            color: '#4CAF50',
+            description: '✓ Good - Air quality is satisfactory, and air pollution poses little or no risk.'
+        };
+    } else if (aqi <= 2) {
+        return {
+            color: '#FFEB3B',
+            description: '⚠ Moderate - Air quality is acceptable. However, there may be a risk for some people.'
+        };
+    } else if (aqi <= 3) {
+        return {
+            color: '#FF9800',
+            description: '⚠ Unhealthy for Sensitive Groups - Members of sensitive groups may experience health effects.'
+        };
+    } else if (aqi <= 4) {
+        return {
+            color: '#F44336',
+            description: '⚠ Unhealthy - Some members of the general public may experience health effects.'
+        };
+    } else if (aqi <= 5) {
+        return {
+            color: '#9C27B0',
+            description: '⚠ Very Unhealthy - Health alert: The risk of health effects is increased for everyone.'
+        };
+    } else {
+        return {
+            color: '#880E4F',
+            description: '⚠ Hazardous - Health warning of emergency conditions: everyone is more likely to be affected.'
+        };
+    }
 }
 
 // Display hourly forecast
@@ -180,13 +278,14 @@ function updateBackground(condition) {
     const lowerCondition = condition.toLowerCase();
     
     const backgrounds = {
-        sunny: 'linear-gradient(135deg, #f6d365 0%, #fda085 100%)',
+        sunny: 'linear-gradient(135deg, #87CEEB 0%, #f6d365 50%, #fda085 100%)',
         clear: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
         cloudy: 'linear-gradient(135deg, #bdc3c7 0%, #2c3e50 100%)',
         rain: 'linear-gradient(135deg, #4b6cb7 0%, #182848 100%)',
         snow: 'linear-gradient(135deg, #e6dada 0%, #274046 100%)',
         thunder: 'linear-gradient(135deg, #232526 0%, #414345 100%)',
-        fog: 'linear-gradient(135deg, #ada996 0%, #f2f2f2 100%)'
+        fog: 'linear-gradient(135deg, #ada996 0%, #f2f2f2 100%)',
+        mist: 'linear-gradient(135deg, #ada996 0%, #f2f2f2 100%)'
     };
     
     let gradient = backgrounds.clear; // default
