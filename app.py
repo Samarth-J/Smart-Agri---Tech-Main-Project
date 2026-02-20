@@ -824,11 +824,12 @@ Keep it concise and farmer-friendly."""
         
         print("Calling Ollama Vision API for disease analysis...")
         print(f"Image data length: {len(image_data)} bytes")
+        print("⚠️ Vision analysis may take 3-5 minutes on first request...")
         
         response = requests.post(
             f"{OLLAMA_BASE_URL}/api/generate",
             json=ollama_payload,
-            timeout=300  # 5 minutes timeout for vision analysis
+            timeout=600  # 10 minutes timeout for vision analysis (first load is slow)
         )
         
         if response.status_code == 200:

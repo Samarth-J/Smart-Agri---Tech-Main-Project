@@ -32,6 +32,9 @@ async function analyzeImage() {
         return;
     }
     
+    console.log('Starting disease analysis...');
+    console.log('Image data length:', selectedImageBase64.length);
+    
     // Show results section with loading
     document.getElementById('resultsSection').style.display = 'block';
     document.getElementById('loadingDiv').style.display = 'block';
@@ -42,11 +45,12 @@ async function analyzeImage() {
     
     // Show progress updates
     let progressMessages = [
-        'Loading AI vision model...',
-        'Processing your image...',
-        'Analyzing plant health...',
-        'Identifying symptoms...',
-        'Generating recommendations...'
+        '⏳ Loading AI vision model (7.8 GB)...',
+        '🔄 Processing your image...',
+        '🔍 Analyzing plant health...',
+        '🌿 Identifying symptoms...',
+        '💊 Generating treatment recommendations...',
+        '⏰ Almost done, please be patient...'
     ];
     let currentMessage = 0;
     
@@ -57,10 +61,16 @@ async function analyzeImage() {
                 loadingP.textContent = progressMessages[currentMessage];
             }
             currentMessage++;
+        } else {
+            // Loop back to keep user informed
+            currentMessage = 3; // Start from "Analyzing plant health"
         }
-    }, 30000); // Update every 30 seconds
+    }, 20000); // Update every 20 seconds
     
     try {
+        console.log('Sending request to /api/analyze-disease...');
+        const startTime = Date.now();
+        
         // Call Flask API with image
         const response = await fetch('/api/analyze-disease', {
             method: 'POST',
@@ -72,13 +82,20 @@ async function analyzeImage() {
             })
         });
         
+        const elapsed = ((Date.now() - startTime) / 1000).toFixed(1);
+        console.log(`Response received in ${elapsed} seconds`);
+        console.log('Response status:', response.status);
+        
         clearInterval(progressInterval);
         
         const data = await response.json();
+        console.log('Response data:', data);
         
         if (response.ok) {
+            console.log('Analysis successful, displaying results');
             displayResults(data.analysis);
         } else {
+            console.error('Analysis failed:', data.message);
             throw new Error(data.message || 'Analysis failed');
         }
     } catch (error) {
