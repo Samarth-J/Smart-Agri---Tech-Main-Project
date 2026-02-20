@@ -24,15 +24,17 @@ document.getElementById('imageInput').addEventListener('change', function(e) {
 });
 
 // Analyze button handler
-document.getElementById('analyzeBtn').addEventListener('click', analyzeImage);
+document.getElementById('analyzeBtn').addEventListener('click', () => analyzeImage(true));
+document.getElementById('quickAnalyzeBtn').addEventListener('click', () => analyzeImage(false));
 
-async function analyzeImage() {
+async function analyzeImage(useVision = true) {
     if (!selectedImageBase64) {
         alert('Please select an image first');
         return;
     }
     
     console.log('Starting disease analysis...');
+    console.log('Mode:', useVision ? 'Vision Analysis' : 'Quick Guide');
     console.log('Image data length:', selectedImageBase64.length);
     
     // Show results section with loading
@@ -44,14 +46,28 @@ async function analyzeImage() {
     document.getElementById('resultsSection').scrollIntoView({ behavior: 'smooth' });
     
     // Show progress updates
-    let progressMessages = [
-        '⏳ Loading AI vision model (7.8 GB)...',
-        '🔄 Processing your image...',
-        '🔍 Analyzing plant health...',
-        '🌿 Identifying symptoms...',
-        '💊 Generating treatment recommendations...',
-        '⏰ Almost done, please be patient...'
-    ];
+    let progressMessages;
+    let updateInterval;
+    
+    if (useVision) {
+        progressMessages = [
+            '⏳ Loading AI vision model (7.8 GB)...',
+            '🔄 Processing your image...',
+            '🔍 Analyzing plant health...',
+            '🌿 Identifying symptoms...',
+            '💊 Generating treatment recommendations...',
+            '⏰ Almost done, please be patient...'
+        ];
+        updateInterval = 20000; // 20 seconds
+    } else {
+        progressMessages = [
+            '⚡ Generating quick disease guide...',
+            '📚 Compiling common diseases...',
+            '💡 Preparing recommendations...'
+        ];
+        updateInterval = 10000; // 10 seconds
+    }
+    
     let currentMessage = 0;
     
     const progressInterval = setInterval(() => {
@@ -61,11 +77,11 @@ async function analyzeImage() {
                 loadingP.textContent = progressMessages[currentMessage];
             }
             currentMessage++;
-        } else {
-            // Loop back to keep user informed
+        } else if (useVision) {
+            // Loop back to keep user informed for vision mode
             currentMessage = 3; // Start from "Analyzing plant health"
         }
-    }, 20000); // Update every 20 seconds
+    }, updateInterval);
     
     try {
         console.log('Sending request to /api/analyze-disease...');
@@ -78,7 +94,8 @@ async function analyzeImage() {
                 'Content-Type': 'application/json',
             },
             body: JSON.stringify({
-                image: selectedImageBase64
+                image: selectedImageBase64,
+                use_vision: useVision
             })
         });
         

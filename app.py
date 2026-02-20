@@ -771,7 +771,7 @@ def disease_prediction():
 
 @app.route('/api/analyze-disease', methods=['POST'])
 def analyze_disease():
-    """Analyze plant disease using Llama 3.2 Vision"""
+    """Analyze plant disease using Llama 3.2 Vision with text fallback"""
     try:
         data = request.get_json()
         
@@ -779,23 +779,68 @@ def analyze_disease():
             return jsonify({"status": "error", "message": "No image provided"}), 400
         
         image_data = data['image']
+        use_vision = data.get('use_vision', True)  # Allow client to request text-only mode
         
         # Remove data URL prefix if present
         if ',' in image_data:
             image_data = image_data.split(',')[1]
         
         # Check if vision model is available
+        vision_available = False
         try:
             models_response = requests.get(f"{OLLAMA_BASE_URL}/api/tags", timeout=5)
             if models_response.status_code == 200:
                 available_models = [m['name'] for m in models_response.json().get('models', [])]
-                if 'llama3.2-vision:latest' not in available_models:
-                    return jsonify({
-                        "status": "error", 
-                        "message": "Vision model not installed. Please run: ollama pull llama3.2-vision:latest"
-                    }), 503
+                vision_available = 'llama3.2-vision:latest' in available_models
         except Exception as e:
             print(f"Failed to check models: {e}")
+        
+        # If vision not available or client requests text-only, use text-based analysis
+        if not vision_available or not use_vision:
+            print("Using text-based disease analysis (faster fallback)")
+            
+            prompt = """You are an agricultural expert specializing in plant disease diagnosis. 
+            
+Based on common plant diseases, provide a general disease analysis guide covering:
+
+1. **Common Plant Diseases**: List 3-4 most common diseases (fungal, bacterial, viral)
+2. **General Symptoms**: What to look for in affected plants
+3. **Treatment Options**: 2-3 practical solutions for each disease type
+4. **Prevention**: Key preventive measures
+
+Format your response clearly with sections and bullet points."""
+
+            ollama_payload = {
+                "model": OLLAMA_MODEL,
+                "prompt": prompt,
+                "stream": False,
+                "options": {
+                    "temperature": 0.3,
+                    "top_p": 0.9,
+                    "num_predict": 500,
+                    "num_ctx": 2048,
+                }
+            }
+            
+            response = requests.post(
+                f"{OLLAMA_BASE_URL}/api/generate",
+                json=ollama_payload,
+                timeout=60  # Much faster - 1 minute
+            )
+            
+            if response.status_code == 200:
+                ollama_response = response.json()
+                analysis = ollama_response.get('response', 'Unable to generate analysis.')
+                
+                return jsonify({
+                    "status": "success",
+                    "analysis": f"⚠️ **Note**: Using general disease guide (vision analysis unavailable or disabled)\n\n{analysis}",
+                    "model": OLLAMA_MODEL,
+                    "mode": "text-only"
+                }), 200
+        
+        # Use vision model for actual image analysis
+        print("Using vision model for image analysis...")
         
         # Create prompt for disease analysis
         prompt = """Analyze this plant image as an agricultural expert. Provide:
@@ -815,10 +860,10 @@ Keep it concise and farmer-friendly."""
             "images": [image_data],
             "stream": False,
             "options": {
-                "temperature": 0.3,  # Lower temperature for more accurate analysis
+                "temperature": 0.3,
                 "top_p": 0.9,
-                "num_predict": 600,  # Reduced for faster response
-                "num_ctx": 2048,     # Context window
+                "num_predict": 600,
+                "num_ctx": 2048,
             }
         }
         
@@ -841,7 +886,8 @@ Keep it concise and farmer-friendly."""
             return jsonify({
                 "status": "success",
                 "analysis": analysis,
-                "model": "llama3.2-vision:latest"
+                "model": "llama3.2-vision:latest",
+                "mode": "vision"
             }), 200
         else:
             print(f"Ollama API error: {response.status_code} - {response.text}")
