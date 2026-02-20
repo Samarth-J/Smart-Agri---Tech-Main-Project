@@ -784,6 +784,19 @@ def analyze_disease():
         if ',' in image_data:
             image_data = image_data.split(',')[1]
         
+        # Check if vision model is available
+        try:
+            models_response = requests.get(f"{OLLAMA_BASE_URL}/api/tags", timeout=5)
+            if models_response.status_code == 200:
+                available_models = [m['name'] for m in models_response.json().get('models', [])]
+                if 'llama3.2-vision:latest' not in available_models:
+                    return jsonify({
+                        "status": "error", 
+                        "message": "Vision model not installed. Please run: ollama pull llama3.2-vision:latest"
+                    }), 503
+        except Exception as e:
+            print(f"Failed to check models: {e}")
+        
         # Create prompt for disease analysis
         prompt = """Analyze this plant image as an agricultural expert. Provide:
 
@@ -822,6 +835,8 @@ Keep it concise and farmer-friendly."""
             ollama_response = response.json()
             analysis = ollama_response.get('response', 'Unable to analyze the image.')
             
+            print(f"✅ Disease analysis completed successfully")
+            
             return jsonify({
                 "status": "success",
                 "analysis": analysis,
@@ -833,7 +848,10 @@ Keep it concise and farmer-friendly."""
         
     except requests.exceptions.Timeout:
         print("Ollama request timeout")
-        return jsonify({"status": "error", "message": "Analysis timeout - please try again with a smaller image"}), 500
+        return jsonify({"status": "error", "message": "Analysis timeout - the vision model is processing. Please wait and try again."}), 500
+    except requests.exceptions.ConnectionError:
+        print("Ollama connection error")
+        return jsonify({"status": "error", "message": "Cannot connect to Ollama. Please ensure Ollama is running."}), 500
     except Exception as e:
         print(f"Disease analysis error: {e}")
         traceback.print_exc()

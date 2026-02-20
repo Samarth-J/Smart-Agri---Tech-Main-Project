@@ -1,0 +1,172 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Test Disease Detection</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            max-width: 800px;
+            margin: 50px auto;
+            padding: 20px;
+        }
+        .status {
+            padding: 15px;
+            margin: 10px 0;
+            border-radius: 5px;
+        }
+        .success { background: #d4edda; color: #155724; }
+        .error { background: #f8d7da; color: #721c24; }
+        .info { background: #d1ecf1; color: #0c5460; }
+        button {
+            padding: 10px 20px;
+            font-size: 16px;
+            cursor: pointer;
+            background: #28a745;
+            color: white;
+            border: none;
+            border-radius: 5px;
+        }
+        button:hover { background: #218838; }
+        #result {
+            margin-top: 20px;
+            padding: 15px;
+            background: #f8f9fa;
+            border-radius: 5px;
+            white-space: pre-wrap;
+        }
+    </style>
+</head>
+<body>
+    <h1>🔬 Disease Detection System Test</h1>
+    
+    <div class="status info">
+        <strong>Test Status:</strong> Ready to test
+    </div>
+    
+    <h2>Step 1: Check Ollama Status</h2>
+    <button onclick="checkOllama()">Check Ollama Connection</button>
+    <div id="ollamaStatus"></div>
+    
+    <h2>Step 2: Check Vision Model</h2>
+    <button onclick="checkVisionModel()">Check Vision Model</button>
+    <div id="visionStatus"></div>
+    
+    <h2>Step 3: Test Disease Detection</h2>
+    <p>Upload a plant image to test the disease detection:</p>
+    <input type="file" id="imageInput" accept="image/*">
+    <button onclick="testDiseaseDetection()">Test Analysis</button>
+    <div id="result"></div>
+    
+    <script>
+        async function checkOllama() {
+            try {
+                const response = await fetch('/api/ollama-status');
+                const data = await response.json();
+                
+                if (data.status === 'connected') {
+                    document.getElementById('ollamaStatus').innerHTML = `
+                        <div class="status success">
+                            ✅ Ollama is connected!<br>
+                            Base URL: ${data.base_url}<br>
+                            Current Model: ${data.current_model}<br>
+                            Available Models: ${data.available_models.join(', ')}
+                        </div>
+                    `;
+                } else {
+                    document.getElementById('ollamaStatus').innerHTML = `
+                        <div class="status error">❌ Ollama connection failed</div>
+                    `;
+                }
+            } catch (error) {
+                document.getElementById('ollamaStatus').innerHTML = `
+                    <div class="status error">❌ Error: ${error.message}</div>
+                `;
+            }
+        }
+        
+        async function checkVisionModel() {
+            try {
+                const response = await fetch('/api/ollama-status');
+                const data = await response.json();
+                
+                if (data.available_models.includes('llama3.2-vision:latest')) {
+                    document.getElementById('visionStatus').innerHTML = `
+                        <div class="status success">
+                            ✅ Vision model is installed and ready!<br>
+                            Model: llama3.2-vision:latest
+                        </div>
+                    `;
+                } else {
+                    document.getElementById('visionStatus').innerHTML = `
+                        <div class="status error">
+                            ❌ Vision model not found!<br>
+                            Please run: <code>ollama pull llama3.2-vision:latest</code>
+                        </div>
+                    `;
+                }
+            } catch (error) {
+                document.getElementById('visionStatus').innerHTML = `
+                    <div class="status error">❌ Error: ${error.message}</div>
+                `;
+            }
+        }
+        
+        async function testDiseaseDetection() {
+            const fileInput = document.getElementById('imageInput');
+            const resultDiv = document.getElementById('result');
+            
+            if (!fileInput.files || !fileInput.files[0]) {
+                resultDiv.innerHTML = '<div class="status error">Please select an image first</div>';
+                return;
+            }
+            
+            resultDiv.innerHTML = '<div class="status info">⏳ Analyzing image... This may take 2-5 minutes...</div>';
+            
+            const file = fileInput.files[0];
+            const reader = new FileReader();
+            
+            reader.onload = async function(e) {
+                try {
+                    const imageData = e.target.result;
+                    
+                    const response = await fetch('/api/analyze-disease', {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json',
+                        },
+                        body: JSON.stringify({ image: imageData })
+                    });
+                    
+                    const data = await response.json();
+                    
+                    if (response.ok) {
+                        resultDiv.innerHTML = `
+                            <div class="status success">
+                                ✅ Analysis Complete!<br><br>
+                                <strong>Model:</strong> ${data.model}<br><br>
+                                <strong>Analysis:</strong><br>
+                                ${data.analysis}
+                            </div>
+                        `;
+                    } else {
+                        resultDiv.innerHTML = `
+                            <div class="status error">
+                                ❌ Analysis Failed<br>
+                                ${data.message}
+                            </div>
+                        `;
+                    }
+                } catch (error) {
+                    resultDiv.innerHTML = `
+                        <div class="status error">❌ Error: ${error.message}</div>
+                    `;
+                }
+            };
+            
+            reader.readAsDataURL(file);
+        }
+    </script>
+</body>
+</html>

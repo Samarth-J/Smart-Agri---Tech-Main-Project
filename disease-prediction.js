@@ -88,21 +88,45 @@ async function analyzeImage() {
         document.getElementById('resultsContent').style.display = 'block';
         
         let errorMessage = error.message;
+        let solutions = [
+            'Wait a few minutes and try again (model might be loading)',
+            'Use a smaller image (< 1MB)',
+            'Ensure the image is clear and well-lit',
+            'Check that Ollama is running: <code>ollama list</code>'
+        ];
+        
         if (errorMessage.includes('timeout') || errorMessage.includes('Timeout')) {
-            errorMessage = 'Analysis took too long. The vision model might be loading for the first time. Please try again in a few minutes.';
+            errorMessage = 'Analysis took too long. The vision model might be processing. Please be patient and try again.';
+            solutions = [
+                'The vision model (7.8 GB) takes time to load on first use',
+                'Wait 2-3 minutes and try again',
+                'Ensure your system has enough RAM (8GB+ recommended)',
+                'Try with a smaller image (< 500KB)'
+            ];
+        } else if (errorMessage.includes('Vision model not installed')) {
+            errorMessage = 'Vision model is not installed on your system.';
+            solutions = [
+                'Run this command: <code>ollama pull llama3.2-vision:latest</code>',
+                'Wait for the 7.8 GB download to complete',
+                'Then refresh this page and try again'
+            ];
+        } else if (errorMessage.includes('Cannot connect to Ollama')) {
+            errorMessage = 'Cannot connect to Ollama service.';
+            solutions = [
+                'Start Ollama: <code>ollama serve</code>',
+                'Or restart the Ollama application',
+                'Check if Ollama is running: <code>ollama list</code>'
+            ];
         }
         
         document.getElementById('diagnosisDiv').innerHTML = `
             <div style="color: #e74c3c; padding: 2rem; text-align: center;">
                 <i class="fas fa-exclamation-triangle" style="font-size: 3rem; margin-bottom: 1rem;"></i>
                 <h3>Analysis Failed</h3>
-                <p>${errorMessage}</p>
-                <p style="margin-top: 1rem;">Possible solutions:</p>
-                <ul style="text-align: left; margin-top: 1rem;">
-                    <li>Wait a few minutes and try again (model might be loading)</li>
-                    <li>Use a smaller image (< 1MB)</li>
-                    <li>Ensure the image is clear and well-lit</li>
-                    <li>Check that Ollama is running: <code>ollama list</code></li>
+                <p style="font-size: 1.1rem; margin: 1rem 0;">${errorMessage}</p>
+                <p style="margin-top: 1.5rem; font-weight: bold;">💡 Possible solutions:</p>
+                <ul style="text-align: left; margin: 1rem auto; max-width: 500px; line-height: 1.8;">
+                    ${solutions.map(s => `<li>${s}</li>`).join('')}
                 </ul>
             </div>
         `;
