@@ -64,7 +64,7 @@ def validate_input(data):
 
 # Initialize Ollama Configuration
 OLLAMA_BASE_URL = "http://localhost:11434"
-OLLAMA_MODEL = "llama3.2:1b"  # Use smaller, faster model first, fallback to llama3:latest
+OLLAMA_MODEL = "llama3.1:latest"  # Default to available model
 
 def test_ollama_connection():
     """Test if Ollama is running and accessible"""
@@ -75,16 +75,24 @@ def test_ollama_connection():
             available_models = [model['name'] for model in models]
             print(f"✅ Ollama connected successfully. Available models: {available_models}")
             
-            # Set the best available model (prefer smaller, faster models)
+            # Set the best available text model (NOT vision model)
             global OLLAMA_MODEL
             if "llama3.2:1b" in available_models:
                 OLLAMA_MODEL = "llama3.2:1b"
                 print(f"🚀 Using fast model: {OLLAMA_MODEL}")
+            elif "llama3.2:latest" in available_models:
+                OLLAMA_MODEL = "llama3.2:latest"
+                print(f"🚀 Using model: {OLLAMA_MODEL}")
+            elif "llama3.1:latest" in available_models:
+                OLLAMA_MODEL = "llama3.1:latest"
+                print(f"📝 Using model: {OLLAMA_MODEL}")
             elif "llama3:latest" in available_models:
                 OLLAMA_MODEL = "llama3:latest"
                 print(f"🐌 Using standard model: {OLLAMA_MODEL}")
             else:
-                OLLAMA_MODEL = available_models[0] if available_models else "llama3:latest"
+                # Find first non-vision model
+                text_models = [m for m in available_models if 'vision' not in m.lower()]
+                OLLAMA_MODEL = text_models[0] if text_models else available_models[0]
                 print(f"📝 Using available model: {OLLAMA_MODEL}")
             
             return True
@@ -178,65 +186,48 @@ def predict_crop():
         ph = float(request.form.get('ph', 0))
         rainfall = float(request.form.get('rainfall', 0))
         
-        # Create agricultural expert prompt for Llama3
-        prompt = f"""You are an expert agricultural scientist specializing in crop recommendation based on soil and climate conditions.
+        # Create SHORTER agricultural expert prompt for faster response
+        prompt = f"""You are an agricultural expert. Recommend ONE crop for these conditions:
 
-Analyze the following soil and environmental parameters and recommend the SINGLE BEST crop to grow:
+N:{N} P:{P} K:{K} pH:{ph} Temp:{temperature}°C Humidity:{humidity}% Rain:{rainfall}mm
 
-Soil Nutrients:
-- Nitrogen (N): {N} kg/ha
-- Phosphorus (P): {P} kg/ha
-- Potassium (K): {K} kg/ha
-- pH Level: {ph}
-
-Climate Conditions:
-- Temperature: {temperature}°C
-- Humidity: {humidity}%
-- Rainfall: {rainfall} mm
-
-Based on these parameters, provide:
-1. The SINGLE BEST recommended crop name (just the crop name, one word)
-2. A brief explanation (2-3 sentences) why this crop is ideal for these conditions
-3. Expected yield potential (High/Medium/Low)
-4. Key growing tips (2-3 bullet points)
-
-Format your response EXACTLY as follows:
-CROP: [crop name]
-REASON: [explanation]
+Respond in this EXACT format:
+CROP: [name]
+REASON: [1 sentence why]
 YIELD: [High/Medium/Low]
 TIPS:
 - [tip 1]
 - [tip 2]
-- [tip 3]
 
-Common crops to consider: rice, wheat, maize, chickpea, kidneybeans, pigeonpeas, mothbeans, mungbean, blackgram, lentil, pomegranate, banana, mango, grapes, watermelon, muskmelon, apple, orange, papaya, coconut, cotton, jute, coffee"""
+Common crops: rice, wheat, maize, cotton, sugarcane, potato, tomato, banana, mango, grapes"""
 
         print(f"Calling Ollama with Llama3 for crop recommendation...")
+        print(f"Using model: {OLLAMA_MODEL}")
         
-        # Call Ollama API with Llama3
+        # Call Ollama API with Llama3 - OPTIMIZED for speed
         ollama_payload = {
             "model": OLLAMA_MODEL,
             "prompt": prompt,
             "stream": False,
             "options": {
-                "temperature": 0.3,  # Lower temperature for more consistent recommendations
+                "temperature": 0.3,
                 "top_p": 0.9,
-                "num_predict": 400,
-                "num_ctx": 2048,
+                "num_predict": 200,  # Reduced from 400 for faster response
+                "num_ctx": 1024,     # Reduced from 2048 for faster processing
             }
         }
         
         response = requests.post(
             f"{OLLAMA_BASE_URL}/api/generate",
             json=ollama_payload,
-            timeout=60
+            timeout=180  # Increased to 3 minutes
         )
         
         if response.status_code == 200:
             ollama_response = response.json()
             ai_response = ollama_response.get('response', '')
             
-            print(f"Llama3 Response: {ai_response}")
+            print(f"✅ Llama3 Response: {ai_response}")
             
             # Parse the response
             crop_name = "Unknown"
@@ -246,24 +237,28 @@ Common crops to consider: rice, wheat, maize, chickpea, kidneybeans, pigeonpeas,
             
             lines = ai_response.split('\n')
             for i, line in enumerate(lines):
-                if line.startswith('CROP:'):
-                    crop_name = line.replace('CROP:', '').strip().lower()
-                elif line.startswith('REASON:'):
-                    reason = line.replace('REASON:', '').strip()
-                elif line.startswith('YIELD:'):
-                    yield_potential = line.replace('YIELD:', '').strip()
-                elif line.startswith('TIPS:'):
+                line_upper = line.upper()
+                if 'CROP:' in line_upper:
+                    crop_name = line.split(':', 1)[1].strip().lower() if ':' in line else "Unknown"
+                elif 'REASON:' in line_upper:
+                    reason = line.split(':', 1)[1].strip() if ':' in line else "Analysis completed"
+                elif 'YIELD:' in line_upper:
+                    yield_potential = line.split(':', 1)[1].strip() if ':' in line else "Medium"
+                elif 'TIPS:' in line_upper or line.strip().startswith('-'):
                     # Collect tips from following lines
-                    for j in range(i+1, min(i+5, len(lines))):
-                        if lines[j].strip().startswith('-'):
-                            tips.append(lines[j].strip()[1:].strip())
+                    if line.strip().startswith('-'):
+                        tips.append(line.strip()[1:].strip())
+                    else:
+                        for j in range(i+1, min(i+4, len(lines))):
+                            if lines[j].strip().startswith('-'):
+                                tips.append(lines[j].strip()[1:].strip())
             
             return jsonify({
                 "status": "success",
                 "crop": crop_name,
                 "reason": reason,
                 "yield_potential": yield_potential,
-                "tips": tips,
+                "tips": tips if tips else ["Follow standard agricultural practices", "Monitor soil health regularly"],
                 "full_analysis": ai_response,
                 "input_params": {
                     "N": N,
@@ -282,7 +277,7 @@ Common crops to consider: rice, wheat, maize, chickpea, kidneybeans, pigeonpeas,
         
     except requests.exceptions.Timeout:
         print("Ollama request timeout")
-        return jsonify({"status": "error", "message": "AI service timeout - please try again"}), 500
+        return jsonify({"status": "error", "message": "AI service timeout - Ollama is slow. Please wait and try again, or restart Ollama."}), 500
     except Exception as e:
         print(f"Crop prediction error: {e}")
         traceback.print_exc()
@@ -825,7 +820,7 @@ Format your response clearly with sections and bullet points."""
             response = requests.post(
                 f"{OLLAMA_BASE_URL}/api/generate",
                 json=ollama_payload,
-                timeout=60  # Much faster - 1 minute
+                timeout=120  # 2 minutes for text generation
             )
             
             if response.status_code == 200:
@@ -838,6 +833,12 @@ Format your response clearly with sections and bullet points."""
                     "model": OLLAMA_MODEL,
                     "mode": "text-only"
                 }), 200
+            else:
+                print(f"Text-based analysis failed: {response.status_code}")
+                return jsonify({
+                    "status": "error",
+                    "message": "AI service temporarily unavailable"
+                }), 500
         
         # Use vision model for actual image analysis
         print("Using vision model for image analysis...")
