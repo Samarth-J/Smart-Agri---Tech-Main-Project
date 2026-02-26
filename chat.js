@@ -6,6 +6,32 @@ document.addEventListener('DOMContentLoaded', () => {
 
   const API_URL = '/chat'; // Use our Flask backend endpoint
   
+  // Check connection on load
+  async function checkConnection() {
+    try {
+      const response = await fetch('/api/ollama-status', { timeout: 5000 });
+      if (response.ok) {
+        console.log('✅ Connected to Flask server');
+        return true;
+      }
+    } catch (error) {
+      console.error('❌ Cannot connect to Flask server');
+      displayMessage(
+        "⚠️ Warning: Cannot connect to the server.\n\n" +
+        "Please make sure:\n" +
+        "1. Flask is running: python app.py\n" +
+        "2. Access via: http://localhost:5000/chat.html\n" +
+        "3. Don't open HTML file directly\n\n" +
+        "Current URL: " + window.location.href,
+        'bot'
+      );
+      return false;
+    }
+  }
+  
+  // Check connection when page loads
+  checkConnection();
+  
   const systemMsg = {
     role: "user",
     parts: [{ text: "You are an expert agricultural assistant named AgriBot. Provide detailed, accurate and helpful responses about farming, crops, weather impact, soil health, pest control, and sustainable agriculture practices. Format your answers with clear concise minimal paragraphs. If asked about something outside agriculture except greetings, politely decline and refocus on farming topics." }]
@@ -105,7 +131,19 @@ document.addEventListener('DOMContentLoaded', () => {
       }
     } catch (error) {
       console.error('Error:', error);
-      displayMessage("⚠️ I'm having trouble connecting right now. Please check your internet connection and try again.", 'bot');
+      let errorMessage = "⚠️ I'm having trouble connecting right now.";
+      
+      if (error.message.includes('Failed to fetch') || error.name === 'TypeError') {
+        errorMessage = "⚠️ Cannot connect to the server. Please make sure:\n\n" +
+                      "1. You're accessing this page through Flask (http://localhost:5000/chat.html)\n" +
+                      "2. Flask server is running (python app.py)\n" +
+                      "3. You're not opening the HTML file directly\n\n" +
+                      "Current URL: " + window.location.href;
+      } else if (error.message.includes('timeout')) {
+        errorMessage = "⚠️ The request timed out. The AI might be processing. Please try again.";
+      }
+      
+      displayMessage(errorMessage, 'bot');
     } finally {
       typing.remove();
       toggleInput(false);
