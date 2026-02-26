@@ -100,6 +100,10 @@ document.addEventListener('DOMContentLoaded', () => {
       return;
     }
 
+    console.log('📤 Sending message:', input);
+    console.log('📍 API URL:', API_URL);
+    console.log('🌐 Current location:', window.location.href);
+
     displayMessage(input, 'user');
     chatInput.value = '';
     const typing = showTyping();
@@ -107,6 +111,7 @@ document.addEventListener('DOMContentLoaded', () => {
     history.push({ role: "user", parts: [{ text: input }] });
 
     try {
+      console.log('⏳ Fetching from:', API_URL);
       const res = await fetch(API_URL, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
@@ -115,22 +120,29 @@ document.addEventListener('DOMContentLoaded', () => {
         })
       });
 
+      console.log('📥 Response status:', res.status);
+      console.log('📥 Response ok:', res.ok);
+
       if (!res.ok) {
         throw new Error(`HTTP error! status: ${res.status}`);
       }
 
       const data = await res.json();
-      console.log('API Response:', data);
+      console.log('✅ API Response:', data);
       
       if (data.status === 'success') {
         const reply = data.message || "⚠️ I didn't receive a proper response. Please try again.";
+        console.log('💬 Bot reply:', reply.substring(0, 100) + '...');
         displayMessage(reply, 'bot');
         history.push({ role: "model", parts: [{ text: reply }] });
       } else {
+        console.error('❌ API returned error:', data.message);
         displayMessage("⚠️ " + (data.message || "Something went wrong. Please try again."), 'bot');
       }
     } catch (error) {
-      console.error('Error:', error);
+      console.error('❌ Error details:', error);
+      console.error('❌ Error name:', error.name);
+      console.error('❌ Error message:', error.message);
       let errorMessage = "⚠️ I'm having trouble connecting right now.";
       
       if (error.message.includes('Failed to fetch') || error.name === 'TypeError') {

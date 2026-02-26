@@ -1,0 +1,203 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Chat Diagnostic Test</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            max-width: 800px;
+            margin: 50px auto;
+            padding: 20px;
+            background: #f5f5f5;
+        }
+        .test-box {
+            background: white;
+            padding: 20px;
+            margin: 20px 0;
+            border-radius: 8px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        }
+        .status {
+            padding: 10px;
+            margin: 10px 0;
+            border-radius: 5px;
+        }
+        .success { background: #d4edda; color: #155724; }
+        .error { background: #f8d7da; color: #721c24; }
+        .info { background: #d1ecf1; color: #0c5460; }
+        button {
+            padding: 10px 20px;
+            background: #4caf50;
+            color: white;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            margin: 5px;
+        }
+        button:hover { background: #45a049; }
+        #chatTest {
+            margin-top: 20px;
+        }
+        #chatInput {
+            width: 70%;
+            padding: 10px;
+            border: 1px solid #ddd;
+            border-radius: 5px;
+        }
+        #response {
+            margin-top: 20px;
+            padding: 15px;
+            background: #f9f9f9;
+            border-radius: 5px;
+            white-space: pre-wrap;
+        }
+    </style>
+</head>
+<body>
+    <h1>🔧 Chat Diagnostic Test</h1>
+    
+    <div class="test-box">
+        <h2>Step 1: Check Current URL</h2>
+        <div id="urlCheck" class="status info">
+            <strong>Current URL:</strong> <span id="currentUrl"></span>
+        </div>
+    </div>
+    
+    <div class="test-box">
+        <h2>Step 2: Check Flask Connection</h2>
+        <button onclick="checkFlask()">Test Flask Connection</button>
+        <div id="flaskStatus"></div>
+    </div>
+    
+    <div class="test-box">
+        <h2>Step 3: Check Ollama Status</h2>
+        <button onclick="checkOllama()">Test Ollama Status</button>
+        <div id="ollamaStatus"></div>
+    </div>
+    
+    <div class="test-box">
+        <h2>Step 4: Test Chat Endpoint</h2>
+        <input type="text" id="chatInput" placeholder="Type a test message..." value="Hello, test message">
+        <button onclick="testChat()">Send Test Message</button>
+        <div id="chatStatus"></div>
+        <div id="response"></div>
+    </div>
+    
+    <div class="test-box">
+        <h2>📋 Instructions</h2>
+        <div class="status info">
+            <p><strong>If all tests pass:</strong> The backend is working. The issue is with chat.html.</p>
+            <p><strong>If tests fail:</strong> Follow the error messages to fix the issue.</p>
+            <p><strong>Correct URL should be:</strong> http://localhost:5000/chat-test.html</p>
+        </div>
+    </div>
+    
+    <script>
+        // Display current URL
+        document.getElementById('currentUrl').textContent = window.location.href;
+        
+        if (window.location.protocol === 'file:') {
+            document.getElementById('urlCheck').className = 'status error';
+            document.getElementById('urlCheck').innerHTML += '<br><br><strong>❌ ERROR:</strong> You are opening this file directly!<br>Please access via: <strong>http://localhost:5000/chat-test.html</strong>';
+        } else {
+            document.getElementById('urlCheck').className = 'status success';
+            document.getElementById('urlCheck').innerHTML += '<br><br>✅ Correct! Accessing through web server.';
+        }
+        
+        async function checkFlask() {
+            const statusDiv = document.getElementById('flaskStatus');
+            statusDiv.innerHTML = '<div class="status info">Testing...</div>';
+            
+            try {
+                const response = await fetch('/api/ollama-status', { 
+                    method: 'GET',
+                    headers: { 'Content-Type': 'application/json' }
+                });
+                
+                if (response.ok) {
+                    statusDiv.innerHTML = '<div class="status success">✅ Flask is running and accessible!</div>';
+                } else {
+                    statusDiv.innerHTML = `<div class="status error">❌ Flask returned status: ${response.status}</div>`;
+                }
+            } catch (error) {
+                statusDiv.innerHTML = `<div class="status error">❌ Cannot connect to Flask: ${error.message}<br><br>Make sure Flask is running: <code>python app.py</code></div>`;
+            }
+        }
+        
+        async function checkOllama() {
+            const statusDiv = document.getElementById('ollamaStatus');
+            statusDiv.innerHTML = '<div class="status info">Testing...</div>';
+            
+            try {
+                const response = await fetch('/api/ollama-status');
+                const data = await response.json();
+                
+                if (data.status === 'connected') {
+                    statusDiv.innerHTML = `
+                        <div class="status success">
+                            ✅ Ollama is connected!<br>
+                            Model: ${data.current_model}<br>
+                            Available: ${data.available_models.join(', ')}
+                        </div>
+                    `;
+                } else {
+                    statusDiv.innerHTML = '<div class="status error">❌ Ollama not connected</div>';
+                }
+            } catch (error) {
+                statusDiv.innerHTML = `<div class="status error">❌ Error: ${error.message}</div>`;
+            }
+        }
+        
+        async function testChat() {
+            const input = document.getElementById('chatInput').value;
+            const statusDiv = document.getElementById('chatStatus');
+            const responseDiv = document.getElementById('response');
+            
+            if (!input.trim()) {
+                alert('Please enter a message');
+                return;
+            }
+            
+            statusDiv.innerHTML = '<div class="status info">⏳ Sending message to AI...</div>';
+            responseDiv.innerHTML = '';
+            
+            const startTime = Date.now();
+            
+            try {
+                const response = await fetch('/chat', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ message: input })
+                });
+                
+                const elapsed = ((Date.now() - startTime) / 1000).toFixed(1);
+                
+                if (response.ok) {
+                    const data = await response.json();
+                    
+                    if (data.status === 'success') {
+                        statusDiv.innerHTML = `<div class="status success">✅ Chat is working! Response in ${elapsed}s</div>`;
+                        responseDiv.innerHTML = `<strong>AI Response:</strong>\n\n${data.message}`;
+                    } else {
+                        statusDiv.innerHTML = `<div class="status error">❌ Error: ${data.message}</div>`;
+                    }
+                } else {
+                    statusDiv.innerHTML = `<div class="status error">❌ HTTP Error: ${response.status}</div>`;
+                }
+            } catch (error) {
+                statusDiv.innerHTML = `<div class="status error">❌ Error: ${error.message}</div>`;
+            }
+        }
+        
+        // Auto-run tests on load
+        setTimeout(() => {
+            if (window.location.protocol !== 'file:') {
+                checkFlask();
+                setTimeout(checkOllama, 1000);
+            }
+        }, 500);
+    </script>
+</body>
+</html>
